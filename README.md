@@ -6,25 +6,29 @@ compiled with Mingw
 
 compiler flags
 
--std=c99
--Wall
--Wextra
--s
+-std=c99<br>
+-Wall<br>
+-Wextra<br>
+-s<br>
 
-All optimizations MUST be disabled
+####All optimizations MUST be disabled
+
 
 The following MingW libraries must be linked..
 
-libwldap32.a
-libgdi32.a
-libkernel32.a
-libnetapi32.a
-libuser32.a
-libvfw32.a
-libwinmm.a
-libws2_32.a
-libversion.a
-libcrypt32.a
-libsetupapi.a
+libwldap32.a<br>
+libgdi32.a<br>
+libkernel32.a<br> 
+libnetapi32.a<br>
+libuser32.a<br>
+libvfw32.a<br>
+libwinmm.a<br>
+libws2_32.a<br>
+libversion.a<br>
+libcrypt32.a<br>
+libsetupapi.a<br>
+
+
+
 
 
