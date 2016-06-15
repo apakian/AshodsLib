@@ -2399,7 +2399,6 @@ _output_error:
  {
  H self_handle;
  _serverstatus status;
- H ms_root;
  }
  _aa_netserverobject;
 
@@ -6052,12 +6051,18 @@ _output_error:
    case WM_SYSKEYUP:
    if(msg==WM_KEYUP||msg==WM_KEYDOWN||msg==WM_SYSKEYUP||msg==WM_SYSKEYDOWN)//||msg==WM_CHAR||msg==WM_SYSCHAR)
     {
-    aa_InputSystemKeyEventProc(wnd,msg,wparm,lparm,0);
+    if(aa.input_system.hKeyHook==0)
+     {
+     aa_InputSystemKeyEventProc(wnd,msg,wparm,lparm,0);
+     }
     }
 
    if(msg==WM_KEYDOWN&&wparm==VK_ESCAPE)
     {
-    if(aa_is_esc==NO&&surface_handle!=0) {   aa_is_esc=YES;      }
+    if(aa_is_esc==NO)
+     {
+     aa_is_esc=YES;
+     }
     }
 
    ret_value=0;// was 1 nov 22 2006
@@ -14192,6 +14197,9 @@ VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr)
 
  aaChainEntry(1);
  if(link==NULL)  {oof; }
+ if(linkindex==CHAINLINK_FIRST) linkindex=chain->link_first;
+ if(linkindex==CHAINLINK_LAST) linkindex=chain->link_last;
+
  cl=(_chainlink*)&chain->link[linkindex];
  if(linkindex==CHAINLINK_NULL||linkindex>=chain->link_count)
   {
@@ -14222,6 +14230,70 @@ VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr)
 
 
 
+ B aaChainLinkTraverse                 (_chain*chain,H linkindex,N amount,HP nlinkindex,_chainlink*link,PP data)
+ {
+ _chainlink*linkptr;
+
+ #ifdef aa_VERSION
+ aa_ZIAG(__FUNCTION__);
+ #endif
+
+ if(linkindex==CHAINLINK_FIRST) linkindex=chain->link_first;
+ if(linkindex==CHAINLINK_LAST) linkindex=chain->link_last;
+ aaDebugf("trav li=%i",linkindex);
+ linkptr=(_chainlink*)&chain->link[linkindex];
+ if(amount<0)
+  {
+  amount=aaNumAbs(amount);
+  while(1)
+   {
+   if(aaBitGet(linkptr->state,1)==1)
+    {
+    if(linkptr->prev==CHAINLINK_NULL) { break; }
+    linkptr=(_chainlink*)&chain->link[linkptr->prev];
+    continue;
+    }
+   if(linkptr->prev==CHAINLINK_NULL) {  break; }
+   linkptr=(_chainlink*)&chain->link[linkptr->prev];
+   amount--;
+   if(amount==0) { break; }
+   }
+  }
+ else
+ if(amount>0)
+  {
+  while(1)
+   {
+   if(aaBitGet(linkptr->state,1)==1)
+    {
+    if(linkptr->prev==CHAINLINK_NULL) { break; }
+    linkptr=(_chainlink*)&chain->link[linkptr->next];
+    continue;
+    }
+   if(linkptr->next==CHAINLINK_NULL) {  break; }
+   linkptr=(_chainlink*)&chain->link[linkptr->next];
+   amount--;
+   if(amount==0) { break; }
+   }
+  }
+ if(nlinkindex)
+  {
+  *nlinkindex=linkptr->self;
+  }
+ if(data)
+  {
+  *data=&chain->mem.mem[linkptr->offset];
+  }
+ if(link)
+  {
+  aaMemoryCopy(link,sizeof(_chainlink),linkptr);
+  }
+ return RET_YES;
+ }
+
+
+
+
 
 
 
@@ -14245,6 +14317,12 @@ VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr)
  aaChainEntry(1);
  if(chain->link_first==CHAINLINK_NULL&&chain->link_last!=CHAINLINK_NULL) { oof; }
  if(chain->link_last==CHAINLINK_NULL&&chain->link_first!=CHAINLINK_NULL) { oof; }
+
+ if(linkindex==CHAINLINK_FIRST) linkindex=chain->link_first;
+ if(linkindex==CHAINLINK_LAST) linkindex=chain->link_last;
+// if(destindex==CHAINLINK_FIRST) destindex=chain->link_first;
+// if(destindex==CHAINLINK_LAST) destindex=chain->link_last;
+
 
  if(destindex==CHAINLINK_FIRST)
   {
@@ -14312,6 +14390,8 @@ VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr)
 
  B aaChainLinkRemove                   (_chain*chain,H linkindex)
  {
+ B was_first;
+ B was_last;
  _chainlink oldlink;
  _chainlink prvlink;
  _chainlink nxtlink;
@@ -14324,11 +14404,34 @@ VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr)
  if(chain->link_first==CHAINLINK_NULL&&chain->link_last!=CHAINLINK_NULL) { oof; }
  if(chain->link_last==CHAINLINK_NULL&&chain->link_first!=CHAINLINK_NULL) { oof; }
 
+ if(linkindex==CHAINLINK_FIRST) linkindex=chain->link_first;
+ if(linkindex==CHAINLINK_LAST) linkindex=chain->link_last;
+
+
  aaChainLinkGet(chain,linkindex,&oldlink,NULL);
+ if(aaBitGet(oldlink.state,1)==1) { return RET_FAILED; }
+
  aaChainLinkGet(chain,oldlink.next,&nxtlink,NULL);
  aaChainLinkGet(chain,oldlink.prev,&prvlink,NULL);
 
- if(aaBitGet(oldlink.state,1)==1) { aaNote(0,"trying to remove already removed line"); }
+
+
+ was_first=was_last=NO;
+
+ if(chain->link_first==linkindex)
+  {
+  was_first=YES;
+  chain->link_first=oldlink.next;
+  }
+ if(chain->link_last==linkindex)
+  {
+  was_last=YES;
+  chain->link_last=oldlink.prev;
+  }
+
+ UNUSE(was_first);
+ UNUSE(was_last);
+
 
  prvlink.next=nxtlink.self;
  nxtlink.prev=prvlink.self;
@@ -14339,9 +14442,17 @@ VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr)
  chain->link_removes++;
  chain->link_usage--;
 
+
  aaChainLinkSet(chain,&oldlink);
  aaChainLinkSet(chain,&prvlink);
  aaChainLinkSet(chain,&nxtlink);
+
+ if(chain->link_usage==0)
+  {
+  chain->link_last=CHAINLINK_NULL;
+  chain->link_first=CHAINLINK_NULL;
+  }
+
 
  return RET_YES;
  }
@@ -21885,7 +21996,7 @@ void ForceVisibleDisplay(HWND hwnd)
    if(flag) {}
    if(han) {}
    if(hwnd) {}
-//   if(aa_SurfaceSystemFindSurfaceByHwnd(0,0,GetFocus())!=RET_YES)
+///   if(aa_SurfaceSystemFindSurfaceByHwnd(0,0,GetFocus())!=RET_YES)
     {
     //aaDebugf("not surf");
     aa_InputSystemKeyEventProc(0,wParam,hooked.vkCode,lp,1);
@@ -44326,6 +44437,7 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
  aa_ZIAG(__FUNCTION__);
  #endif
  if(port==0) { return RET_BADPARM; }
+ if(maxcalls==0) { return RET_BADPARM; }
  if((ret=aa_ObjectCreate(aa.net_system.server_object_id,handle,(VP)&srvop))!=RET_YES)
   {
   oops;
@@ -44357,7 +44469,7 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
   }
  srvop->status.port.handle=han;
  srvop->status.is_calls_allowed=YES;
- aaTimerTikGet(&srvop->ms_root);
+// aaTimerTikGet(&srvop->ms_root);
  aaNetTcpPortStatus(srvop->status.port.handle,&srvop->status.port.status);
  return RET_YES;
  }
@@ -44383,14 +44495,7 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
   if((ret=aaNetTcpPortStatus(srvop->status.port.handle,&srvop->status.port.status))!=YES) { oops; }
   if(srvop->status.port.status.calls_waiting==0&&srvop->status.port.status.calls_answered==0) { break; }
   if((ret=aaNetTcpPortCallNext(srvop->status.port.handle,&cu.handle,&cu.status,0))!=YES)  { oops; continue; }
-
-//  rscd=(_rtmpproxyservercalldata*)srvop->status.call.status.extra_data;
-//  if(rscd!=NULL)
-//   {
-//   //if(rscd->magic==0x29219291)    {    rtmpDelete(&rscd->rtmp); ; }
-//   }
-
- if((ret=aaNetTcpCallDestroy(cu.handle))!=YES)  { oops; continue; }
+  if((ret=aaNetTcpCallDestroy(cu.handle))!=YES)  { oops; continue; }
   }
  if(srvop->status.port.handle!=0) {   aaNetTcpPortDestroy(srvop->status.port.handle); }
  aa_ObjectDestroy(aa.net_system.server_object_id,handle);
@@ -44406,19 +44511,15 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
  B isprot;
  _aa_netserverobject*srvop;
  _tcpcallunit cu;
- _timer*tmu;
+ //_timer*tmu;
  BP xtra;
  #ifdef aa_VERSION
  aa_ZIAG(__FUNCTION__);
  #endif
  if((ret=aa_ObjectCheck(aa.net_system.server_object_id,handle,(VP)&srvop,&isprot))!=RET_YES) { return ret; }
- //if(call) { call->handle=0; }
- //if(extraptr) { *extraptr=NULL; }
  if(tcpcallunit) tcpcallunit->handle=0;
 
  cu.handle=0;
- //srvop->status.call.handle=0;
- //srvop->status.is_call=NO;
  if((ret=aaNetTcpPortStatus(srvop->status.port.handle,&srvop->status.port.status))!=YES) { oops;  }
  while(1)
    {
@@ -44435,7 +44536,6 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
      if(aaNetTcpPortStatus(srvop->status.port.handle,&srvop->status.port.status)!=YES) { oof; }
      break;
      }
-     //BUG,"answerl %s %s %x",cu.status.remote_dot,cu.status.local_dot,cu.status.session);
     if(aaNetTcpCallAnswer(cu.handle)!=YES) { oof; }
     aaNetTcpCallSlicerLengthSet(cu.handle,_8K,_8K);
     aaNetTcpCallBufferLengthSet(cu.handle,_32K,_32K);
@@ -44446,7 +44546,9 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
 
    xtra=cu.status.extra_data;
    xtra+=(cu.status.extra_bytes-32);
-   tmu=(_timer*)&xtra[4];
+   //tmu=(_timer*)&xtra[4];
+
+   #if 0
    if(cu.status.is_closed_by_local)//close_request!=0)
     {
     aaTimerUpdate(tmu,1);//(_timer*)&xtra[4],1);
@@ -44461,10 +44563,11 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
     //BUGGY;
     cu.handle=0;
     }
+   #endif
    break;
-
-
    }
+
+ #if 0
  if(cu.handle==0)
   {
   aaTimerTikElapsed(srvop->ms_root,&srvop->status.inactivity_ms);
@@ -44474,6 +44577,7 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
   aaTimerTikGet(&srvop->ms_root);
   srvop->status.inactivity_ms=0;
   }
+ #endif
  //if(call) { call->handle=cu.handle; aaMemoryCopy(&call->status,sizeof(_tcpcallstatus),&cu.status); }
 // if(cu.handle!=0&&extraptr) { *extraptr=cu.status.extra_data; }
  ///aaTimerTikGet(&srvop->ms_root);
@@ -44495,6 +44599,25 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
 
 
 
+ B aaNetServerCallsAllow               (H handle,B state)
+ {
+ B ret;
+ B isprot;
+ _aa_netserverobject*srvop;
+
+ #ifdef aa_VERSION
+ aa_ZIAG(__FUNCTION__);
+ #endif
+ if((ret=aa_ObjectCheck(aa.net_system.server_object_id,handle,(VP)&srvop,&isprot))!=RET_YES) { return ret; }
+ if(state==YES) { srvop->status.is_calls_allowed=YES; }
+ else           { srvop->status.is_calls_allowed=NO; }
+ return RET_YES;
+ }
+
+
+
+
+#if 0
  B aaNetServerCallClose                (H handle,_tcpcallunit*tcpcallunit,H ms)
  {
  B ret;
@@ -44526,28 +44649,12 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
  }
 
 
-
-
-
- B aaNetServerCallsAllow               (H handle,B state)
- {
- B ret;
- B isprot;
- _aa_netserverobject*srvop;
-
- #ifdef aa_VERSION
- aa_ZIAG(__FUNCTION__);
- #endif
- if((ret=aa_ObjectCheck(aa.net_system.server_object_id,handle,(VP)&srvop,&isprot))!=RET_YES) { return ret; }
- if(state==YES) { srvop->status.is_calls_allowed=YES; }
- else           { srvop->status.is_calls_allowed=NO; }
- return RET_YES;
- }
+#endif
 
 
 
 
-
+#if 0
  B aaNetServerFlush                    (H handle,_tcpcallunit*tcpcallunit)
  {
  B ret;
@@ -44575,6 +44682,8 @@ function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement fun
   }
  return ret;
  }
+
+#endif
 
 
 /*-----------------------------------------------------------------------*/
@@ -64524,6 +64633,7 @@ void displaydemo (void)
  DISPLAY_DEVICE ddMon;
  DWORD devMon;
  C DeviceID[_1K];
+ D area;
 
 
  #ifdef aa_VERSION
@@ -64639,6 +64749,10 @@ void displaydemo (void)
           aaSizeSet(&displayinfo->monitor_mm[i],WidthMm,HeightMm);
           displayinfo->monitor_ppmm[i][0]=(D)displayinfo->monitor_rect[i].w/(D)displayinfo->monitor_mm[i].w;
           displayinfo->monitor_ppmm[i][1]=(D)displayinfo->monitor_rect[i].h/(D)displayinfo->monitor_mm[i].h;
+
+          area=((D)displayinfo->monitor_mm[i].w*(D)displayinfo->monitor_mm[i].w);
+          area+=((D)displayinfo->monitor_mm[i].h*(D)displayinfo->monitor_mm[i].h);
+          displayinfo->monitor_diagonal_mm[i]=sqrt(area);
           break;
           }
          }
@@ -76625,6 +76739,7 @@ if(str) { bp=(BP)str; bp[sl+1]=NULL_CHAR; }
  aaVmProcAdd(vm,0,"aaChainLinkLengthSet",&aaChainLinkLengthSet);
  aaVmProcAdd(vm,0,"aaChainLinkSet",&aaChainLinkSet);
  aaVmProcAdd(vm,0,"aaChainLinkGet",&aaChainLinkGet);
+ aaVmProcAdd(vm,0,"aaChainLinkTraverse",&aaChainLinkTraverse);
  aaVmProcAdd(vm,0,"aaChainLinkInsert",&aaChainLinkInsert);
  aaVmProcAdd(vm,0,"aaChainLinkRemove",&aaChainLinkRemove);
  aaVmProcAdd(vm,0,"aaSorterNew",&aaSorterNew);
@@ -77233,9 +77348,7 @@ if(str) { bp=(BP)str; bp[sl+1]=NULL_CHAR; }
  aaVmProcAdd(vm,0,"aaNetServerCreate",&aaNetServerCreate);
  aaVmProcAdd(vm,0,"aaNetServerDestroy",&aaNetServerDestroy);
  aaVmProcAdd(vm,0,"aaNetServerStatus",&aaNetServerStatus);
- aaVmProcAdd(vm,0,"aaNetServerCallClose",&aaNetServerCallClose);
  aaVmProcAdd(vm,0,"aaNetServerCallsAllow",&aaNetServerCallsAllow);
- aaVmProcAdd(vm,0,"aaNetServerFlush",&aaNetServerFlush);
  aaVmProcAdd(vm,0,"aaNetWockCreate",&aaNetWockCreate);
  aaVmProcAdd(vm,0,"aaNetWockDestroy",&aaNetWockDestroy);
  aaVmProcAdd(vm,0,"aaNetWockStatus",&aaNetWockStatus);
@@ -77494,6 +77607,8 @@ if(str) { bp=(BP)str; bp[sl+1]=NULL_CHAR; }
  aaVmProcAdd(vm,0,"aaDisplayMonitorPowerSet",&aaDisplayMonitorPowerSet);
  aaVmProcAdd(vm,0,"aaDisplayPowerBrightnessGet",&aaDisplayPowerBrightnessGet);
  aaVmProcAdd(vm,0,"aaDisplayPowerBrightnessSet",&aaDisplayPowerBrightnessSet);
+ aaVmProcAdd(vm,0,"aaDisplayToMm",&aaDisplayToMm);
+ aaVmProcAdd(vm,0,"aaDisplayFromMm",&aaDisplayFromMm);
  aaVmProcAdd(vm,0,"aaAudioCountGet",&aaAudioCountGet);
  aaVmProcAdd(vm,0,"aaAudioNameGet",&aaAudioNameGet);
  aaVmProcAdd(vm,0,"aaAudioModeSet",&aaAudioModeSet);
@@ -77829,6 +77944,8 @@ if(str) { bp=(BP)str; bp[sl+1]=NULL_CHAR; }
  aaVmProcAdd(vm,0,"aaVmCall",&aaVmCall);
  aaVmProcAdd(vm,0,"aaVmCallEx",&aaVmCallEx);
  aaVmProcAdd(vm,0,"aaVmAaHeaderFunctions",&aaVmAaHeaderFunctions);
+
+
  vm->is_sys_func=NO;
  return RET_YES;
  }

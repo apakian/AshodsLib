@@ -1415,6 +1415,8 @@ VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr);
  B aaChainLinkSet                      (_chain*chain,_chainlink*link);
  B aaChainLinkGet                      (_chain*chain,H linkindex,_chainlink*link,PP data);
 
+ B aaChainLinkTraverse                 (_chain*chain,H linkindex,N amount,HP nlinkindex,_chainlink*link,PP data);
+
  B aaChainLinkInsert                   (_chain*chain,H linkindex,H destindex);
  B aaChainLinkRemove                   (_chain*chain,H linkindex);
 
@@ -3496,7 +3498,6 @@ VP aaf                                (VP buf,H off,VP fmt,...);
  H max_calls;
  H extra_bytes;
  B is_calls_allowed;
- H inactivity_ms;
  }
  _serverstatus;
 
@@ -3795,9 +3796,7 @@ VP aaf                                (VP buf,H off,VP fmt,...);
  B aaNetServerCreate                   (HP handle,H ip,W port,H maxcalls,H extra);
  B aaNetServerDestroy                  (H handle);
  B aaNetServerStatus                   (H handle,_serverstatus*serverstatus,_tcpcallunit*tcpcallunit);
- B aaNetServerCallClose                (H handle,_tcpcallunit*tcpcallunit,H ms);
  B aaNetServerCallsAllow               (H handle,B state);
- B aaNetServerFlush                    (H handle,_tcpcallunit*tcpcallunit);
 
 
  B aaNetWockCreate                     (HP handle,H tcpcallhandle,B inbound,VP fmt,...);
@@ -4790,6 +4789,7 @@ VP aaf                                (VP buf,H off,VP fmt,...);
  B monitor_primary_index;
  _rect monitor_rect[16];
  _size monitor_mm[16];
+ D monitor_diagonal_mm[16];
  D monitor_ppmm[16][2];
  B monitor_name[16][33];
  H monitor_handle[16];
