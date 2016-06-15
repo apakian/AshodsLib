@@ -1,0 +1,1986 @@
+/*------------------------------------------------------------------------
+ * aaBoost: A better boost
+ * Summary of functions
+ *-----------------------------------------------------------------------*/
+
+/* some of the catagories of functions
+ == standard entry, logging, exit, crash recovery functions
+ == high performace switch case engine
+ == stage and substage flow control
+ == flag bit manipulation functions
+ == timer functions
+ == time functions
+ == geo location functions
+ == memory allocation functions
+ == memory resident execution of DLL's
+ == scrap memory functions
+ == object grouping functions
+ == memory serialization functions
+ == bloom filters
+ == doubly linked list and chaining functoins
+ == sorting functions
+ == list functions
+ == option functions
+ == dynamic data functions
+ == string functions
+ == base64 functions
+ == guid functions
+ == parsing functions
+ == co-ordinate functions
+ == sizing functions
+ == rectangular functions
+ == grid conversion functions
+ == rgba,yuva,hlsa functions
+ == thread functions
+ == process functions
+ == fiber functions
+ == object pooling functions
+ == window, child window, and thread enumerators
+ == dynamic buffers
+ == dynamic arrays
+ == queue functions
+ == vector functions
+ == huffman encoding
+ == lz4 encodeing
+ == mini stacks
+ == mini queues
+ == general event functions
+ == network functions
+ == cgi enviorment functions
+ == shell functions
+ == url functions
+ == cookie functions
+ == direct dns functions ( mx etc )
+ == direct sniffer functions
+ == icmp functions
+ == udp functions
+ == stun protocol functions
+ == socket functions
+ == socket server functions
+ == socks5 functions
+ == http functions
+ == smtp functions
+ == ftp functions
+ == redis functions
+ == ssdb functions
+ == irc functions
+ == web socket client functions
+ == web socket server functions
+ == network chunk processing functions
+ == redis engine functions
+ == ssdb engine functions
+ == direct mysql functions
+ == tor functions
+ == font direct and loadable functions
+ == surface engine
+ == blitting engine
+ == gif,png,jpg,tga,bmp encode/decode functions
+ == low-level input handling, global key and mouse handling (without dlls)
+ == low level audio input output, pitch shifting . time stretch etc
+ == DCT functions
+ == Twister random engine
+ == Big number functions
+ == video capture functions
+ == wav functions
+ == ini functions
+ == file functions
+ == file streaming functions
+ == file box, folder box dialogs etc
+ == directory scanning functions
+ == drive scanning functions
+ == text reading, loading functions
+ == very detailed system information functions
+ == resource handling functions
+ == digest functions md5, sha etc
+ == crypto rc4, des etc
+ == json functions
+ == class functions
+ == clipboard functions
+ == ipc functions
+ == virtual machine functions
+ == and fuck load more..
+*/
+
+
+
+
+ B aaStart                             (HINSTANCE thisinst,HINSTANCE previnst,LPSTR cmdline,Z cmdshow);
+ Z aaStop                              (V);
+ B aaExitCodeSet                       (H code);
+ V aaMain                              (V);
+ V aaAbort                             (VP fmt,...);
+ B aaQuit                              (V);
+ B aaTrace                             (VP fmt,...);
+ B aaTraceFileSet                      (VP fmt,...);
+ B aaCallStackGet                      (H maxitems,HP addresses);
+ B aaCpuIdGet                          (Z cpuinfo[4],Z infotype);
+ Q aaMsRunning                         (V);
+ Q aaMicrosecsRunning                  (V);
+ B aaConsoleAttach                     (V);
+ B aaConsoleDetach                     (V);
+ B aaConsolePrintf                     (VP fmt,...);
+ B aaLog                               (H line,VP fmt,...);
+ B aaLogX                              (B how,VP fmt,...);
+ B aaAaFilesBackup                     (B aatrace,B aacrash,B aahistory,B aaoofs);
+ B aaAaFilesDelete                     (B aatrace,B aacrash,B aahistory,B aaoofs);
+ B aaAaFilesBackupOnSize               (Q aatracesize,Q aacrashsize,Q aahistorysize,Q aaoofssize);
+ B aaAaFilesDeleteOnSize               (Q aatracesize,Q aacrashsize,Q aahistorysize,Q aaoofssize);
+ B aaHistory                           (H line,VP fmt,...);
+ B aaJournal                           (VP filename,VP fmt,...);
+ B aaNotes                             (VP filename,VP fmt,...);
+ B aaBeep                              (W freq,W ms);
+ B aaWinErrorGet                       (VP buf,H line);
+ B aaWinEventLog                       (B mode,VP srce,W eid,W cat,VP fmt,...);
+ B aaNote                              (H surfacehandle,VP fmt,...);
+ B aaNotex                             (H surfacehandle,VP fmt,...);
+ B aaField                             (H surfacehandle,B multiline,H maxchars,VP buf,VP title);
+ B aaYesNoBox                          (H surfacehandle,VP fmt,...);
+ B aaSleep                             (H ms);
+ B aaSleepPrecise                      (Q microsecs);
+ B aaSleepHz                           (D hz);
+ B aaSleepLoad                         (D percent);
+ B aaStageSet                          (H stage);
+ B aaStageAndNextSet                   (H stage,H next);
+ B aaStageAdjust                       (N amount);
+ B aaStagePrev                         (V);
+ B aaStageNext                         (V);
+ B aaFocusToDbg                        (B clr);
+ B aaFocusToBorland                    (V);
+ B aaFocusToCodeBlocks                 (V);
+ B aaFocusToFirefox                    (V);
+ B aaFocusToHwnd                       (HWND hwnd);
+ B aaHwndGroupGet                      (HWND*active,HWND*focus,HWND*foreground);//,HWND*top);
+ B aaHwndInfoGet                       (HWND hwnd,HWND*phwnd,HWND*ohwnd,RECT*winrect,VP strclass,VP strtitle);
+ B aaHwndIsObscured                    (HWND hwnd,B detail,DP visipc);
+ B aaIsRemoteSession                   (V);
+ B aaIsDebug                           (V);
+ B aaIsRemoteDebug                     (V);
+ B aaIsProfiling                       (V);
+ B aaProfilingPause                    (B state);
+ B aaDebugf                            (VP fmt,...);
+ B aaDebugfBlankLine                   (B count);
+ B aaDebugfLogWriteSet                 (B state);
+ B aaDebugfLogStyleSet                 (B style);
+ B aaDebugfMemoryDump                  (V);
+ B aaLimiterSet                        (VP uid,V(*LimiterMessageProc)(H bytes,VP data));
+ B aaLimiterCheck                      (VP uid);
+ B aaLimiterPost                       (VP uid,HWND hwnd,H bytes,VP msg);
+ B aaLimiterPostf                      (VP uid,HWND hwnd,VP fmt,...);
+ V aaLimiterNullProc                   (H bytes,VP data);
+ B aaRetroMain                         (Z(*mainfunc)(Z argc,CP argv[]),ZP mainret,VP sourcearg,...);
+ B aaMorph                             (VP processfilename,VP cmdline);
+ B aaRestart                           (V);
+ B aaReboot                            (B force);
+ B aaRoutineAdd                        (V(*ProcYield)(VP),VP yparm,V(*ProcStop)(VP),VP sparm);
+ B aaCopyDataProcSet                   (V(*CopyDataProc)(HWND,HWND,H,H,VP));
+ B aaCopyDataPost                      (HWND from,HWND to,H ms,H data,H bytes,VP buf);
+ B aaYieldRaw                          (V);
+ B aaYield                             (D hz);
+
+/*-----------------------------------------------------------------------*/
+
+ H aaSwitch                            (_aaswitcher*aaswitcher);
+ B aaCheck                             (_aaswitcher*aaswitcher,VP fmt,...);
+ H aaJump                              (_aaswitcher*aaswitcher,VP fmt,...);
+ H aaFall                              (_aaswitcher*aaswitcher,VP fmt,...);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaSubStageInit                      (_substage*substage,H stage);
+ B aaSubStageSet                       (_substage*substage,H stage);
+ B aaSubStageAdjust                    (_substage*substage,N amount);
+ B aaSubStagePrev                      (_substage*substage);
+ B aaSubStageNext                      (_substage*substage);
+ B aaSubStageNextSet                   (_substage*substage,H stage);
+ B aaSubStageAndNextSet                (_substage*substage,H stage,H next);
+/*-----------------------------------------------------------------------*/
+
+ B aaFlagMapInit                       (_flagmap*flagmap);
+ B aaFlagMapSet                        (_flagmap*flagmap,H bit,B ack);
+ B aaFlagMapCheckSet                   (_flagmap*flagmap,H bit,H how,HP map,B ack);
+ B aaFlagMapClear                      (_flagmap*flagmap,H bit,B ack);
+ B aaFlagMapCheck                      (_flagmap*flagmap,H bit,H how,HP map);
+ B aaFlagMapAck                        (_flagmap*flagmap,H bit);
+/*-----------------------------------------------------------------------*/
+
+ B aaTimerNull                         (_timer*timer,H count);
+ B aaTimerInit                         (_timer*timer,H count);
+ B aaTimerUpdate                       (_timer*timer,H count);
+ B aaTimerPulse                        (_timer*timer,H ms);
+ B aaTimerElapsed                      (_timer*timer,H ms,B reinit);
+ B aaTimerAdjust                       (_timer*timer,H count,N amnt);
+
+ B aaTimerProfilerNull                 (_profiler*profiler);
+ B aaTimerProfilerInit                 (_profiler*profiler,H count);
+ B aaTimerProfilerUpdate               (_profiler*profiler,H count);
+ B aaTimerProfilerAdjust               (_profiler*profiler,H count,B what,G amnt);
+ B aaTimerProfilerPulse                (_profiler*profiler,B what,G elapsed);
+ G aaTimerProfilerRead                 (_profiler*profiler,B what);
+ B aaTimerProfilerGet                  (QP counter);
+ B aaTimerProfilerElapsed              (Q counter,GP mselapsed,GP microelapsed,GP nanoelapsed,GP counterelapsed);
+
+ B aaTimerCalculate                    (B what,Q elapsed,GP ms,GP micro,GP nano,GP counters);
+
+ B aaTimerTikGet                       (HP tik);
+ B aaTimerTikAdjust                    (HP tik,N amnt);
+ B aaTimerTikElapsed                   (H tik,HP mselapsed);
+ B aaTimerTikElapsedUsingTik           (H tik,H now,HP mselapsed);
+ B aaTimerTikToDuration                (H tik,_duration*duration);
+ B aaTimerMsToDuration                 (H ms,_duration*duration);
+ B aaTimerPrimitive                    (H nowms,H prevms,HP elapsedms);
+
+/*-----------------------------------------------------------------------*/
+ B aaTimeNull                          (_systime*systime);
+ B aaTimeIsNull                        (_systime*systime);
+ B aaTimeIsValid                       (_systime*systime);
+ B aaTimeEqualsTime                    (_systime*systime,_systime*systime2,B extended);
+ B aaTimeCopy                          (_systime*systime,_systime*ssystime);
+ B aaTimeSet                           (_systime*systime,H dow,H year,H month,H date,H hour,H minute,H second,H ms,N gmtdif);
+ B aaTimeLocalGet                      (_systime*systime);
+ B aaTimeSystemGet                     (_systime*systime);
+ B aaTimeApply                         (_systime*systime);
+ B aaTimeToCookieTimeString            (_systime*st,VP str);
+ B aaTimeDayOfWeekGet                  (H date,H month,H year,HP dow);
+ B aaTimeFirstDayOfMonthGet            (H month,H year,HP dow);
+ B aaTimeIsLeapYear                    (H year);
+ B aaTimeDaysInMonthGet                (H month,H year,HP days);
+ B aaTimeToString                      (_systime*systime,VP str,VP tzstr,B longday);
+ B aaTimeFromString                    (_systime*systime,VP str);
+ B aaTimeCompare                       (_systime*systime,_systime*systime2,GP secdif);
+ B aaTimeAdjust                        (_systime*systime,_systime*ressystime,G secdif);
+ B aaTimeMsRunning                     (HP ms);
+ B aaTimeLaunchTikGet                  (HP ms);
+ B aaTimeUtcGet                        (QP utc);
+ B aaTimeSecsToDuration                (H s,_duration*duration);
+ B aaTimeToUnixTime                    (_systime*systime,QP unixtime);
+ B aaTimeFromUnixTime                  (_systime*systime,Q unixtime);
+ B aaTimeGetOfDay                      (struct timeval*tv);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaGeoLookup                         (VP countrycode,VP countryname,VP continent,HP index);
+ B aaGeoCountryNameToIndex             (VP countryname,HP index);
+ B aaGeoCountryCodeToIndex             (VP countrycode,HP index);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaMemoryStatus                      (_memorystatus*memorystatus);
+ B aaMemoryTableGet                    (_memorytable*memorytable);
+ B aaMemoryZero                        (VP dst,H bytes);
+ B aaMemoryFill                        (VP dst,H bytes,B val);
+ B aaMemoryCopy                        (VP dst,H bytes,VP src);
+ B aaMemoryMove                        (VP dst,H bytes,VP src);
+ B aaMemorySwap                        (VP dst,H bytes,VP src);
+ B aaMemoryTemp                        (PP mem,H bytes);
+ B aaMemoryAllocate                    (PP mem,H bytes);
+ B aaMemoryReAllocate                  (PP mem,H bytes);
+ B aaMemoryResize                      (PP mem,H bytes);
+ B aaMemoryDuplicate                   (PP mem,VP src);
+ B aaMemoryMake                        (PP mem,H bytes);
+ B aaMemoryIsAllocated                 (VP mem,HP bytes);
+ B aaMemoryNameSet                     (VP mem,VP fmt,...);
+ B aaMemoryNameGet                     (VP mem,VP name);
+ B aaMemoryBytesGet                    (VP mem,HP bytes);
+ B aaMemoryBlockGet                    (PP mem,HP bytes,H id);
+ B aaMemoryRelease                     (VP mem);
+ B aaMemoryAdlerCrcGet                 (VP mem,H bytes,HP crc);
+ B aaMemoryCrcGet                      (VP mem,H bytes,HP crc);
+ B aaMemoryCrc64Get                    (VP mem,H bytes,QP crc);
+ B aaMemoryHashGet                     (VP mem,H bytes,HP hash);
+ B aaMemoryValueFill                   (VP mem,H count,H valbytes,VP valmem);
+ B aaMemoryPokeByte                    (VP mem,H offset,B val);
+ B aaMemoryPokeWord                    (VP mem,H offset,W val);
+ B aaMemoryPokeDword                   (VP mem,H offset,H val);
+ B aaMemoryPokeQuad                    (VP mem,H offset,Q val);
+ B aaMemoryPeekByte                    (VP mem,H offset,u8p val);
+ B aaMemoryPeekWord                    (VP mem,H offset,WP val);
+ B aaMemoryPeekDword                   (VP mem,H offset,HP val);
+ B aaMemoryPokeDwordAndInc             (VP mem,HP offset,H val);
+ B aaMemoryPeekDwordAndInc             (VP mem,HP offset,HP val);
+ B aaMemoryCompare                     (VP dst,H bytes,VP src,NP dif);
+ B aaMemoryRandomSet                   (VP dst,H bytes);
+ B aaMemoryRandomDwordSet              (HP val,H lo,H hi);
+ B aaMemoryRandomHit                   (H lo,H hi,H eq);
+ B aaMemoryPageAllocate                (HP handle);
+ B aaMemoryPageRelease                 (H handle);
+ B aaMemoryPageProtect                 (H handle,B state);
+ B aaMemoryPageGet                     (H handle,PP mem,u8p isprotected);
+ B aaMemoryCodeAllocate                (PP mem,H bytes);
+ B aaMemoryCodeRelease                 (VP mem);
+ B aaMemorySearch                      (VP mem,H entries,H entrybytes,VP usrdata,VP data,HP index,B(*proc)(VP,H,H,VP,VP,VP,NP));
+ B aaMemorySort                        (VP mem,H entries,H entrybytes,VP usrdata,B(*proc)(VP,H,H,VP,VP,VP,NP));
+ B aaMemoryCompareProc                 (VP mem,H entries,H entrybytes,VP usrdata,VP itema,VP itemb,NP dif);
+ B aaMemoryOrderSort                   (VP mem,H entries,H stride,H offset,H size,B issigned,B des,HP order);
+ B aaMemoryUnitAllocate                (_memoryunit*memoryunit,H bytes);
+ B aaMemoryUnitReAllocate              (_memoryunit*memoryunit,H bytes);
+ B aaMemoryUnitMake                    (_memoryunit*memoryunit,H bytes);
+ B aaMemoryUnitRelease                 (_memoryunit*memoryunit);
+ B aaMemoryWorkingSetSizeSet           (H minbytes,H maxbytes);
+ B aaMemoryWorkingSetFlush             (V);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaMemoryModuleLoad                  (_memorymodule*memorymodule,H bytes,VP mem);
+ B aaMemoryModuleRelease               (_memorymodule*memorymodule);
+ B aaMemoryModuleAttach                (_memorymodule*memorymodule);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaScrapNew                          (_scrap*scrap,H bytes);
+ B aaScrapDelete                       (_scrap*scrap);
+ B aaScrapBytesGet                     (_scrap*scrap,Z offset,HP bytes);
+ B aaScrapInfoFromMemory               (_scrap*scrap,ZP offset,HP bytes,VP mem);
+ B aaScrapInfoFromOffset               (_scrap*scrap,Z offset,HP bytes,PP mem);
+ B aaScrapAllocate                     (_scrap*scrap,H reqbytes,ZP offset,HP bytes,PP mem);
+ B aaScrapReAllocate                   (_scrap*scrap,H reqbytes,ZP offset,HP bytes,PP mem);
+ B aaScrapRelease                      (_scrap*scrap,Z offset);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaGroupofCreate                     (_groupof*groupof,H width,H initialslots);
+ B aaGroupofDestroy                    (_groupof*groupof);
+ B aaGroupofNew                        (_groupof*groupof,HP index,PP mem);
+ B aaGroupofGet                        (_groupof*groupof,H index,PP mem);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaSerialMemNew                      (_serialmem*serialmem,H bytes);
+ B aaSerialMemDelete                   (_serialmem*serialmem);
+ B aaSerialMemMalloc                   (_serialmem*serialmem,H bytes,PP xptr);
+ B aaSerialMemFree                     (_serialmem*serialmem,VP ptr);
+ B aaSerialMemInfoToString             (_serialmem*serialmem,H maxchars,VP str);
+ B aaSerialMemMap                      (_serialmem*serialmem,VP file,...);
+ B aaSerialMemUnMap                    (_serialmem*serialmem,PP physaddr,VP file,...);
+VP aaSerialMemPhys                     (_serialmem*serialmem,Y virtaddr);
+ Y aaSerialMemVirt                     (_serialmem*serialmem,VP physaddr);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaBloomNew                          (_bloom*bloom,H maxentries,D error);
+ B aaBloomLoad                         (_bloom*bloom,VP file,...);
+ B aaBloomDelete                       (_bloom*bloom);
+ B aaBloomSave                         (_bloom*bloom,VP file,...);
+ B aaBloomFind                         (_bloom*bloom,H bytes,VP data);
+ B aaBloomFindf                        (_bloom*bloom,VP fmt,...);
+ B aaBloomAdd                          (_bloom*bloom,H bytes,VP data);
+ B aaBloomAddf                         (_bloom*bloom,VP fmt,...);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaChainNew                          (_chain*chain);
+ B aaChainDelete                       (_chain*chain);
+
+ B aaChainLinkClear                    (_chain*chain,_chainlink*link);
+ B aaChainLinkNew                      (_chain*chain,_chainlink*link,H bytes,PP data);
+ B aaChainLinkLengthSet                (_chain*chain,_chainlink*link,H bytes,PP data);
+ B aaChainLinkSet                      (_chain*chain,_chainlink*link);
+ B aaChainLinkGet                      (_chain*chain,H linkindex,_chainlink*link,PP data);
+ B aaChainLinkTraverse                 (_chain*chain,H linkindex,N amount,HP nlinkindex,_chainlink*link,PP data);
+ B aaChainLinkInsert                   (_chain*chain,H linkindex,H destindex);
+ B aaChainLinkRemove                   (_chain*chain,H linkindex);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaSorterNew                         (_sorter*sorter,G entries,VP data,B(*proc)(_sorter*,H,G,G,VP,NP));
+ B aaSorterDelete                      (_sorter*sorter);
+ B aaSorterSort                        (_sorter*sorter,H ita);
+ B aaSorterProc                        (_sorter*sorter,H cmd,G index,G parm,VP buf,NP arg);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaListNew                           (_list*list);
+ B aaListOpen                          (_list*list,VP fmt,...);
+ B aaListSave                          (_list*list,VP fmt,...);
+ B aaListClone                         (_list*list,_list*slist);
+ B aaListDelete                        (_list*list);
+ B aaListAppend                        (_list*list,HP index,VP key,H bytes,VP val);
+ B aaListAppendf                       (_list*list,HP index,VP key,VP fmt,...);
+ B aaListFind                          (_list*list,H from,HP index,VP key,...);
+ B aaListRemove                        (_list*list,H index);
+ B aaListPointerGet                    (_list*list,H index,PP key,PP val);
+ B aaListPointerGetByNumber            (_list*list,HP index,H numbr,PP key,PP val);
+ B aaListReset                         (_list*list);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaOptionsNew                        (_options*options);
+ B aaOptionsDelete                     (_options*options);
+ B aaOptionsSet                        (_options*options,VP data,...);
+VP aaOptionsGet                        (_options*options,DP num,VP data,...);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaDataAllocate                      (_data*data);
+ B aaDataRelease                       (_data*data);
+ B aaDataReset                         (_data*data);
+ B aaDataFieldAdd                      (_data*data,HP index,H bytes,H alias,PP mem);
+ B aaDataFieldRemove                   (_data*data,H index);
+ B aaDataFieldWrite                    (_data*data,HP index,H bytes,H alias,VP mem);
+ B aaDataFieldWritef                   (_data*data,HP index,H alias,VP fmt,...);
+ B aaDataFieldRead                     (_data*data,H index,HP bytes,HP alias,H maxbytes,VP mem);
+ B aaDataFieldSizeSet                  (_data*data,H index,H bytes,PP mem);
+ B aaDataFieldInfoGetByNumber          (_data*data,H numbr,HP bytes,HP index,HP alias,PP mem);
+ B aaDataFieldInfoGetByAlias           (_data*data,H alias,HP bytes,HP index,PP mem);
+ B aaDataFieldInfoGetByIndex           (_data*data,H index,HP bytes,HP alias,PP mem);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaStringNull                        (VP str);
+ B aaStringIsNull                      (VP str);
+ B aaStringIsEmpty                     (VP str,B onlybool);
+ B aaStringCopy                        (VP dst,VP src);
+ B aaStringNCopy                       (VP dst,VP src,H chars,B appendnull);
+ B aaStringCopyLen                     (VP dst,VP src,HP chars);
+ B aaStringLen                         (VP str,HP chars);
+ B aaStringNLen                        (VP str,H maxchars,HP chars);
+ B aaStringLenSet                      (VP str,H chars);
+ B aaStringFill                        (VP str,H chars,B ascii,B appendnull);
+ B aaStringAppendChar                  (VP str,B ch);
+ B aaStringAppendChars                 (VP str,B ch,H count,B appendnull);
+ B aaStringAppend                      (VP dst,VP src);
+ B aaStringVSprintf                    (VP dst,VP fmt,va_list arglist);
+ B aaStringNCopyf                      (VP dst,H maxchars,VP fmt,...);
+ B aaStringCopyf                       (VP dst,VP fmt,...);
+ B aaStringCopyfLen                    (VP dst,HP chars,VP fmt,...);
+ B aaStringAppendCopyf                 (VP dst,HP chars,VP afmt,VP fmt,...);
+ B aaStringConcat                      (VP str,...);
+ B aaStringAppendf                     (VP dst,VP fmt,...);
+ B aaStringAppendfLen                  (VP dst,HP chars,VP fmt,...);
+ B aaStringSpacedAppendf               (VP dst,VP fmt,...);
+ B aaStringCopyx                       (VP dst,VP fmt,...);
+ B aaStringCompare                     (VP dst,VP src,NP dif);
+ B aaStringICompare                    (VP dst,VP src,NP dif);
+ B aaStringNCompare                    (VP dst,VP src,H chars,NP dif);
+ B aaStringNICompare                   (VP dst,VP src,H chars,NP dif);
+ B aaStringUpper                       (VP str,H chars,VP ostr);
+ B aaStringLower                       (VP str,H chars,VP ostr);
+ B aaStringReverse                     (VP str,H chars,VP ostr,B appendnull);
+ B aaStringInsertChar                  (VP str,H chars,H pos,C ch);
+ B aaStringInsertChars                 (VP str,H chars,H pos,C ch,H inscount);
+ B aaStringDeleteChar                  (VP str,H chars,H pos);
+ B aaStringDeleteChars                 (VP str,H chars,H pos,H delcount);
+ B aaStringDeleteCharsTillChar         (VP str,H chars,B ch,B incch,HP len);
+ B aaStringCharGet                     (VP str,H chars,N pos,BP ch);
+ B aaStringCharSet                     (VP str,H chars,N pos,B ch);
+ B aaStringCharUpper                   (VP str,H chars,N pos);
+ B aaStringCharLower                   (VP str,H chars,N pos);
+ B aaStringLastCharGet                 (VP str,H chars,BP ch);
+ B aaStringLastCharSet                 (VP str,H chars,B ch,B appendnull);
+ B aaStringIsLastChar                  (VP str,H chars,B ch);
+ B aaStringLastCharNonVisibleRemove    (VP str,H chars);
+ B aaStringFirstCharNonVisibleRemove   (VP str,H chars);
+ B aaStringInsertString                (VP str,H chars,H pos,VP istr,H ichars);
+ B aaStringInsertStringf               (VP str,H chars,H pos,B appendnull,VP fmt,...);
+ B aaStringIsString                    (VP str,NP which,...);
+ B aaStringIsIString                   (VP str,NP which,...);
+ B aaStringIsStringPartial             (VP str,NP which,...);
+ B aaStringIsIStringPartial            (VP str,NP which,...);
+ B aaStringIsNumerical                 (VP str,B allowfloat,B allowsign,H chars);
+ B aaStringIsDeliminated               (VP str,H chars,WP type,BP mode);
+ B aaStringCountNumbers                (VP str,H chars,HP count,B consecutive);
+ B aaStringCountHex                    (VP str,H chars,HP count,B consecutive);
+ B aaStringCountAlpha                  (VP str,H chars,HP count,B upper,B lower,B underscore,B consecutive);
+ B aaStringCountAlphaNum               (VP str,H chars,HP count,B upper,B lower,B underscore,B numerical,B consecutive);
+ B aaStringCountVisibleChars           (VP str,H chars,HP count,B logic,B consecutive,B fwd);
+ B aaStringIsPrintable                 (VP str,H chars);
+ B aaStringCountPrintable              (VP str,H chars,HP count);
+ B aaStringToDouble                    (VP str,H chars,DP dub);
+ B aaStringToNumber                    (VP str,H chars,HP loh,HP hih,GP gv,QP qv);
+ B aaStringHexToNumber                 (VP str,H chars,HP loh,HP hih,GP gv,QP qv);
+ B aaStringFromBinary                  (VP str,H from,H nbits,H gbits,B dir,VP mem);
+ B aaStringCountChars                  (VP str,H chars,HP count,B ch,B consecutive,B logic);
+ B aaStringFindChar                    (VP str,H chars,HP pos,B ch,B logic,H number,B fwd);
+ B aaStringFindCharList                (VP str,H chars,HP pos,VP chlist,B logic,H number,B fwd);
+ B aaStringFindFirstAlpha              (VP str,H chars,HP pos,B logic);
+ B aaStringFindFirstNumber             (VP str,H chars,HP pos,B logic);
+ B aaStringFindCharVisible             (VP str,H chars,HP pos,B logic,H number,B fwd);
+ B aaStringReplaceChar                 (VP str,H chars,B fromch,B toch);
+ B aaStringReplaceString               (VP str,H chars,VP fstr,H fchars,VP tstr,H tchars,B iscasesensitive,VP ostr);
+ B aaStringFindFirstString             (VP str,H chars,VP fstr,H fchars,HP pos); // added flag to return pos at start or end of the match
+ B aaStringFindFirstIString            (VP str,H chars,VP fstr,H fchars,HP pos);
+ B aaStringCleanup                     (VP str,H chars,B ignorequoted,HP newlen);
+ B aaStringRemoveMultipleSpaces        (VP str,H chars,B ignorequoted);
+ B aaStringRemoveSpaces                (VP str,H chars,B removeleading,B removetrailing);
+ B aaStringRemoveChars                 (VP str,H chars,B ch);
+ B aaStringDespace                     (VP str,H chars);
+ B aaStringFindFirstIStrings           (VP str,H chars,HP pos,HP len,NP which,...);
+ B aaStringIsQuoted                    (VP str,H chars,BP qchar);
+ B aaStringIsBraced                    (VP str,H chars);
+ B aaStringIsBracketed                 (VP str,H chars);
+ B aaStringIsParenthesized             (VP str,H chars);
+ B aaStringQuotify                     (VP str,H chars,B qchar);
+ B aaStringRandomSet                   (VP str,H chars,B alphalo,B alphahi,B numerical,B appendnull);
+ B aaStringHashGet                     (VP str,H chars,HP hash,B iscasesensitive);
+ B aaStringHashIsTrue                  (VP str,H chars,H hash,B iscasesensitive);
+ B aaStringHashBothGet                 (VP str,H chars,HP hash,HP hashi);
+ B aaStringGuid                        (VP str,B appendnull);
+ B aaStringIsGuid                      (VP str);
+ B aaStringFromWideString              (VP str,WCHAR*wstr);
+ B aaStringToWideString                (VP str,WCHAR*wstr);
+ B aaStringPathSanitize                (VP str,H chars,VP ostr);
+ B aaStringRot13                       (VP str,H chars,VP ostr);
+ B aaStringTranspose                   (VP str,H chars,N amnt,VP ostr);
+ B aaStringFromDword                   (VP str,H val);
+ B aaStringFromArrayHex                (VP str,H sizet,H count,H cols,B dooffs,B doascii,VP mem);
+ B aaStringHexDump                     (VP str,H sizet,H count,H cols,B dooffs,B doascii,VP buf,VP fmt,...);
+ B aaStringSplit                       (VP str,H chars,H pos,B incsplit,VP str1,VP str2);
+ B aaStringSplitChar                   (VP str,H chars,B ch,B incsplit,B logic,H number,B fwd,VP str1,VP str2);
+ B aaStringExplode                     (VP str,H chars,_stringexplode*explode,B dch);
+ B aaStringExplodeTokenGet             (VP str,H index,_stringexplode*explode,VP token);
+ B aaStringExplodePtrGet               (VP str,H index,_stringexplode*explode,PP token);
+ B aaStringEncode                      (VP str,H chars,VP ostr,B appendnull,VP ignorecharlist);
+ B aaStringDecode                      (VP str,H chars,VP ostr,B fully,B appendnull);
+ B aaStringEntityToPseudoEnglish       (VP str,H chars,VP ostr);
+ B aaStringLineCountGet                (VP str,H chars,HP lines);
+ B aaStringLineCountGetToMemory        (VP str,H chars,HP lines,H maxinfolines,PP lineoff,PP linechars);
+ B aaStringLineCountGetToBuffer        (VP str,H chars,HP lines,H maxinfolines,HP lineoff,HP linechars);
+ B aaStringLineGet                     (VP str,H chars,HP strchars,HP modechars,HP totchars,BP mode);
+ B aaStringMatchCount                  (VP str,H chars,VP fstr,H fchars,B iscasesensitive,HP count,B logic);
+ B aaStringLengthModeAdjust            (B mode,H chars,B addflag,HP adjustedchars);
+ B aaStringToker                       (VP str,H chars,_stringtoker*toker,B dohash,B dobuf);
+ B aaStringTokerMini                   (VP str,H chars,_stringtokermini*tokermini);
+ B aaStringTokerMaxi                   (VP str,H chars,_stringtokermaxi*tokermaxi);
+ B aaStringTokerMiniStringGet          (VP str,H index,H maxchars,_stringtokermini*tokermini);
+ B aaStringTokerMaxiStringGet          (VP str,H index,H maxchars,_stringtokermaxi*tokermaxi);
+ B aaStringUnicodeToClosestEnglish     (VP str,H chars,VP ostr);
+ B aaStringContract                    (VP str,H chars,N amnt);
+ B aaStringUtfLen                      (VP str,H chars,HP uchars);
+ B aaStringUtfPosGet                   (VP str,H uchrs,H pos,HP off);
+ B aaStringUtfTypeGet                  (VP str,H chars,HP type);
+ B aaStringToUtf8                      (VP str,H chars,HP ochars,H maxochars,VP ostr);
+ B aaStringTokenGet                    (VP str,H chars,B ch,H ti,HP toff,HP tchars,VP tok);
+ B aaStringFix                         (VP str);
+ B aaStringWildCompare                 (VP str,H chars,VP wildcard);
+ B aaStringStartsWithContains          (VP str,H chars,VP sstr,H schars,B isand,VP contains,...);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaBase64Encode                      (VP mem,H bytes,VP str,HP chars);
+ B aaBase64Decode                      (VP str,H chars,VP mem,HP bytes);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaGuidInit                          (_guid*guid,VP node);
+ B aaGuidSet                           (_guid*guid,W cseq,Q tstamp,VP node);
+ B aaGuidToString                      (_guid*guid,VP str);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaParserInit                        (_parser*parser,VP string,H chars);
+ B aaParserCopy                        (_parser*parser,_parser*sparser,B reset);
+ B aaParserSeek                        (_parser*parser,N amnt);
+ B aaParserOffsetSet                   (_parser*parser,H offset);
+ B aaParserDeleteChars                 (_parser*parser,H amnt);
+ B aaParserReset                       (_parser*parser);
+ B aaParserSeekToChar                  (_parser*parser,B ch,B logic,B fwd);
+ B aaParserSeekToCharList              (_parser*parser,VP chlist,B logic);
+ B aaParserSeekToNumber                (_parser*parser,B logic);
+ B aaParserSeekToVisibleChar           (_parser*parser,B logic);
+ B aaParserSeekToString                (_parser*parser,VP string,B cs,B logic,B flags);
+ B aaParserSeekToStringf               (_parser*parser,B cs,B logic,B flags,VP fmt,...);
+ B aaParserStringCopy                  (_parser*parser,VP buf,H chars,B appendnull);
+ B aaParserStackPush                   (_parser*parser);
+ B aaParserStackPop                    (_parser*parser);
+ B aaParserStackPeek                   (_parser*parser,H index,HP offset);
+ B aaParserStackDiscard                (_parser*parser);
+ B aaParserStackString                 (_parser*parser,HP chars,H maxchars,VP buf,B appendnull);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaCordNull                          (_cord*cord);
+ B aaCordSet                           (_cord*cord,N x,N y);
+ B aaCordGet                           (_cord*cord,NP x,NP y);
+ B aaCordCopy                          (_cord*cord,_cord*scord);
+ B aaCordAdjust                        (_cord*cord,N xa,N ya);
+ B aaCordsAdjust                       (_cord*cord1,_cord*cord2,N x1a,N y1a,N x2a,N y2a);
+ B aaCordEqualsCord                    (_cord*cord,_cord*cord2);
+ B aaCordSubtract                      (_cord*cord,_cord*cord2,_cord*rescord);
+ B aaCordAdd                           (_cord*cord,_cord*cord2,_cord*rescord);
+ B aaCordIsWithinRect                  (_cord*cord,_rect*rect);
+ B aaCordIsWithinRects                 (_cord*cord,_rect*rect,H count,HP which);
+ B aaCordsSet                          (_cord*cord1,_cord*cord2,N x1,N y1,N x2,N y2);
+ B aaCordsToRect                       (_cord*cord1,_cord*cord2,_rect*rect);
+ B aaCordIsZero                        (_cord*cord);
+ B aaCordCopyFromRect                  (_cord*cord,_rect*srect);
+
+ B aaSizeNull                          (_size*size);
+ B aaSizeSet                           (_size*size,H w,H h);
+ B aaSizeGet                           (_size*size,HP w,HP h);
+ B aaSizeCopy                          (_size*size,_size*ssize);
+ B aaSizeAdjust                        (_size*size,N wa,N ha);
+ B aaSizeEqualsSize                    (_size*size,_size*size2);
+ B aaSizeToRect                        (_size*size,_rect*rect);
+ B aaSizeIsValid                       (_size*size);
+ B aaSizeCordCenterGet                 (_size*size,_cord*cord);
+
+ B aaRectNull                          (_rect*rect);
+ B aaRectIsEmpty                       (_rect*rect);
+ B aaRectSet                           (_rect*rect,N x,N y,H w,H h);
+ B aaRectGet                           (_rect*rect,NP x,NP y,HP w,HP h);
+ B aaRectCopy                          (_rect*rect,_rect*srect);
+ B aaRectAdjust                        (_rect*rect,N xa,N ya,N wa,N ha);
+ B aaRectCordSet                       (_rect*rect,N x,N y);
+ B aaRectSizeSet                       (_rect*rect,H w,H h);
+ B aaRectEqualsRect                    (_rect*rect,_rect*rect2);
+ B aaRectIntersect                     (_rect*rect,_rect*rect2,_rect*resrect);
+ B aaRectIsInsideRect                  (_rect*rect,_rect*rect2);
+ B aaRectIsOutsideRect                 (_rect*rect,_rect*rect2);
+ B aaRectIsOverlappingRect             (_rect*rect,_rect*rect2);
+ B aaRectAdd                           (_rect*rect,_rect*rect2,_rect*resrect);
+ B aaRectSubtract                      (_rect*rect,_rect*rect2,_rect*resrect);
+ B aaRectToCords                       (_rect*rect,_cord*cord1,_cord*cord2);
+ B aaRectToSize                        (_rect*rect,_size*size);
+ B aaRectIsValid                       (_rect*rect);
+ B aaRectCordCenterGet                 (_rect*rect,_cord*cord);
+ B aaRectExpand                        (_rect*rect,N wamnt,N hamnt);
+ B aaRectToCornerCords                 (_rect*rect,_cord*cord1,_cord*cord2,_cord*cord3,_cord*cord4);
+ B aaRectToSideCords                   (_rect*rect,_cord*cord1,_cord*cord2,_cord*cord3,_cord*cord4);
+ B aaRectAlignRect                     (_rect*rect,_rect*rect2,B ha,B va,_rect*resrect);
+ B aaRectFromWinRect                   (_rect*rect,RECT*winrect);
+
+ B aaGridToCord                        (_rect*rect,_cord*g1,_cord*c1);
+ B aaGridToCords                       (_rect*rect,_cord*g1,_cord*g2,_cord*c1,_cord*c2);
+ B aaGridToRect                        (_rect*rect,_cord*g1,_cord*g2,_rect*r1);
+ B aaGridRectToCord                    (_rect*rect,_rect*r1,_cord*c1);
+ B aaGridRectToCords                   (_rect*rect,_rect*r1,_cord*c1,_cord*c2);
+ B aaGridRectToRect                    (_rect*rect,_rect*r1,_rect*r2);
+
+ B aaCordToGrid                        (_rect*rect,_cord*c1,_cord*g1);
+ B aaCordToGrids                       (_rect*rect,_cord*c1,_cord*c2,_cord*g1,_cord*g2);
+ B aaRectToGrid                        (_rect*rect,_rect*r1,_cord*g1,_cord*g2);
+
+ B aaGridFromFloats                    (_cord*cord1,_cord*cord2,D x1,D y1,D x2,D y2);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaFCordSet                          (_fcord*fcord,F x,F y);
+ B aaFCordCopy                         (_fcord*fcord,_fcord*sfcord);
+
+ B aaFSizeSet                          (_fsize*fsize,F w,F h);
+ B aaFsizeCopy                         (_fsize*fsize,_fsize*sfsize);
+
+ B aaFRectSet                          (_frect*frect,F x,F y,F w,F h);
+ B aaFRectCopy                         (_frect*frect,_frect*sfrect);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaRgbaSet                           (_rgba*rgba,B r,B g,B b,B a);
+ B aaRgbaCopy                          (_rgba*rgba,_rgba*srgba);
+ B aaRgbaCopyWithAlpha                 (_rgba*rgba,_rgba*srgba,B a);
+ B aaRgbaAdjust                        (_rgba*rgba,N ramnt,N gamnt,N bamnt,N aamnt);
+ B aaRgbaEqualsRgba                    (_rgba*rgba,_rgba*rgba2);
+ B aaRgbaGradientArray                 (_rgba*rgba1,_rgba*rgba2,H count,_rgba*rgbaarray);
+ B aaRgbaDwordSet                      (_rgba*rgba,H dword);
+ B aaRgbaYuvaSet                       (_rgba*rgba,B y,B u,B v,B a);
+ B aaRgbaSetUsingHlsa                  (_rgba*rgba,B h,B l,B s,B a);
+ B aaRgbaMix                           (_rgba*p1,_rgba*p2,_rgba*p3);
+ B aaRgbaAdjustUsingHlsa               (_rgba*p1,N hamnt,N lamnt,N samnt,N aamnt,_rgba*p2);
+ B aaRgbaShadeSet                      (_rgba*p1,_rgba*p2,F amnt);
+ B aaRgbaSwap                          (_rgba*p1,_rgba*p2);
+
+ B aaRgbabfSet                         (_rgbabf*rgbabf,B rb,B gb,B bb,B ab,B rf,B gf,B bf,B af);
+ B aaRgbabfCopy                        (_rgbabf*rgbabf,_rgba*rgbab,_rgba*rgbaf);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaYuvaSet                           (_yuva*yuva,B y,B u,B v,B a);
+ B aaYuvaCopy                          (_yuva*yuva,_yuva*syuva);
+ B aaYuvaAdjust                        (_yuva*yuva,N yamnt,N uamnt,N vamnt,N aamnt);
+ B aaYuvaToRgba                        (_yuva*yuva,_rgba*rgba);
+ B aaYuvaFromRgba                      (_yuva*yuva,_rgba*rgba);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaHlsaSet                           (_hlsa*hlsa,B h,B l,B s,B a);
+ B aaHlsaCopy                          (_hlsa*hlsa,_hlsa*shlsa);
+ B aaHlsaAdjust                        (_hlsa*hlsa,N hamnt,N lamnt,N samnt,N aamnt);
+ B aaHlsaToRgba                        (_hlsa*hlsa,_rgba*rgba);
+ B aaHlsaFromRgba                      (_hlsa*hlsa,_rgba*rgba);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaGfxClawInit                       (_gfxclaw*gfxclaw);
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaThreadCreate                      (HP handle,H(*function)(VP parm),H data,B startpaused);
+ B aaThreadDestroy                     (H handle);
+ B aaThreadExit                        (H handle);
+ B aaThreadStatus                      (H handle,_threadstatus*threadstatus);
+ B aaThreadWait                        (H handle,B waitexit);
+ B aaThreadPause                       (H handle,B state);
+ B aaThreadLock                        (H handle,B wait);
+ B aaThreadUnLock                      (H handle);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaProcessCreate                     (HP handle,VP fname,VP cmdline,B clmode,B inherit,B startpaused,B detach,B newroot,W showcmd,B isconsole,VP desktop);
+ B aaProcessCreateWithLogin            (HP handle,VP fname,VP cmdline,VP user,VP pass,B detach,B newroot);
+ B aaProcessDestroy                    (H handle);
+ B aaProcessExit                       (H handle);
+ B aaProcessPause                      (H handle,B state);
+ B aaProcessStatus                     (H handle,_processstatus*processstatus);
+ B aaProcessStatusToString             (H handle,_processstatus*processstatus,VP str);
+ B aaProcessUnresponsiveTimeoutSet     (H handle,H ms);
+ B aaProcessRetry                      (H handle);
+ B aaProcessSpawn                      (VP fname,VP cmdline,W showcmd,HP prochan,HP procid);
+ B aaProcessLaunch                     (VP exefile,VP exeargs,VP workdir,W showcmd,HP prochan,HP procid);
+ B aaProcessIsRunning                  (VP exename,HP count);
+ B aaProcessThreadList                 (HP handle,H index,_processthreadentry*processthreadentry);
+ B aaProcessThreadListDestroy          (H handle);
+ B aaProcessTerminateByHandle          (HANDLE handle,W ecode);
+ B aaProcessTerminateByPid             (H pid,W ecode);
+ B aaProcessRestart                    (VP exename,VP cmdline,HP prochan,HP procid);
+ B aaProcessListGather                 (_processlist*processlist);
+ B aaProcessListRelease                (_processlist*processlist);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaFiberCreate                       (HP handle,H ssize,V(*proc)(VP),H data);
+ B aaFiberDestroy                      (H handle);
+ B aaFiberStatus                       (H handle,_fiberstatus*fiberstatus);
+ B aaFiberConvert                      (H handle);
+ B aaFiberSwitch                       (H handle);
+ B aaFiberReturn                       (H handle);
+ B aaFiberExtraDataSet                 (H handle,H bytes);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaPoolCreate                        (HP handle,H bytesperblock,H blocksperpage,H maxpages);
+ B aaPoolDestroy                       (H handle);
+ B aaPoolStatus                        (H handle,_poolstatus*poolstatus);
+ B aaPoolStatusToString                (H handle,_poolstatus*poolstatus,VP str);
+
+ B aaPoolBlockNew                      (H handle,_poolblock*poolblock);
+ B aaPoolBlockDelete                   (H handle,VP block);
+ B aaPoolBlockDeleteByIndex            (H handle,H bindex);
+ B aaPoolBlockInfoGet                  (H handle,VP block,_poolblock*poolblock);
+ B aaPoolBlockGetByIndex               (H handle,H bindex,_poolblock*poolblock);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaWinEnumCreate                     (HP handle,B mode,H hanhwn);
+ B aaWinEnumDestroy                    (H handle);
+ B aaWinEnumStatus                     (H handle,_winenumstatus*winenumstatus);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaDynbufCreate                      (HP handle);
+ B aaDynbufDestroy                     (H handle);
+ B aaDynbufStatus                      (H handle,_dynbufstatus*dynbufstatus);
+ B aaDynbufReset                       (H handle);
+ B aaDynbufSeek                        (H handle,H offset);
+ B aaDynbufAppendByte                  (H handle,B val);
+ B aaDynbufAppendWord                  (H handle,W val);
+ B aaDynbufAppendDword                 (H handle,H val);
+ B aaDynbufAppend                      (H handle,H bytes,VP data);
+ B aaDynbufAppendf                     (H handle,VP fmt,...);
+ B aaDynbufAppendBits                  (H handle,H bits,N data,B issigned);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaArrayCreate                       (HP handle);
+ B aaArrayDestroy                      (H handle);
+ B aaArrayStatus                       (H handle,_arraystatus*arraystatus);
+ B aaArrayLengthSet                    (H handle,H bytes);
+ B aaArrayWrite                        (H handle,H offset,H bytes,VP data);
+ B aaArrayRead                         (H handle,H offset,H bytes,VP data);
+ B aaArrayFill                         (H handle,H offset,H bytes,B val);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaQueCreate                         (HP handle);
+ B aaQueDestroy                        (H handle);
+ B aaQueStatus                         (H handle,_questatus*questatus);
+ B aaQueWrite                          (H handle,H bytes,VP data);
+ B aaQueWritef                         (H handle,VP fmt,...);
+ B aaQueWriteByte                      (H handle,B val);
+ B aaQueWriteWord                      (H handle,W val);
+ B aaQueWriteDword                     (H handle,H val);
+ B aaQueWriteQuad                      (H handle,Q val);
+ B aaQueRead                           (H handle,H bytes,VP data);
+ B aaQueReadByte                       (H handle,BP val);
+ B aaQueReadWord                       (H handle,WP val);
+ B aaQueReadDword                      (H handle,HP val);
+ B aaQueReadQuad                       (H handle,QP val);
+ B aaQuePeek                           (H handle,H offset,H bytes,VP data);
+ B aaQuePeekByte                       (H handle,H offset,BP val);
+ B aaQuePeekWord                       (H handle,H offset,WP val);
+ B aaQuePeekDword                      (H handle,H offset,HP val);
+ B aaQuePeekQuad                       (H handle,H offset,QP val);
+ B aaQueFindByte                       (H handle,H offset,H bytes,HP pos,B val,B logic,H number);
+ B aaQueDiscard                        (H handle,H bytes);
+ B aaQueStringLen                      (H handle,HP chars,BP stringmode);
+ B aaQueStringRead                     (H handle,HP chars,BP stringmode,H maxchars,VP buf);
+ B aaQueReturn                         (H handle,H bytes);
+ B aaQueTrim                           (H handle,H bytes);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaVectorNew                         (_aavector*aavector,H slotbytes,H initialslots);
+ B aaVectorDelete                      (_aavector*aavector);
+ B aaVectorExtendSlots                 (_aavector*aavector,H amnt);
+ B aaVectorDataBytesSet                (_aavector*aavector,H slot,H bytes,_aavectorslot*aavectorslot);
+ B aaVectorSlotGet                     (_aavector*aavector,H slot,_aavectorslot*aavectorslot);
+ B aaVectorUsageAdjust                 (_aavector*aavector,N amount);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaHuffNew                           (_aahuff*aahuff);
+ B aaHuffDelete                        (_aahuff*aahuff);
+ B aaHuffEncode                        (_aahuff*aahuff,H ibytes,VP ibuf,HP obytes,H obufmax,VP obuf);
+ B aaHuffDecode                        (_aahuff*aahuff,H ibytes,VP ibuf,HP obytes,H obufmax,VP obuf);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaLz4Encode                         (VP source,H sbytes,VP dest,HP dbytes);
+ B aaLz4Decode                         (VP source,H sbytes,VP dest,HP dbytes,H maxdbytes);
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaMiniQueInit                       (_minique*minique);
+ B aaMiniQueWrite                      (_minique*minique,H bytes,VP data);
+ B aaMiniQueRead                       (_minique*minique,H bytes,VP data);
+ B aaMiniQuePeek                       (_minique*minique,H offset,H bytes,VP data);
+ B aaMiniQueDiscard                    (_minique*minique,H bytes);
+ B aaMiniQueReturn                     (_minique*minique,H bytes);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaMiniStackInit                     (_ministack*ministack);
+ B aaMiniStackPush                     (_ministack*ministack,H bytes,VP data);
+ B aaMiniStackPushByte                 (_ministack*ministack,B val);
+ B aaMiniStackPushWord                 (_ministack*ministack,W val);
+ B aaMiniStackPushDword                (_ministack*ministack,H val);
+ B aaMiniStackPushQuad                 (_ministack*ministack,Q val);
+ B aaMiniStackPushStringf              (_ministack*ministack,VP fmt,...);
+ B aaMiniStackPushMulti                (_ministack*ministack,VP fmt,...);
+ B aaMiniStackPop                      (_ministack*ministack,H bytes,VP data);
+ B aaMiniStackPopByte                  (_ministack*ministack,BP val);
+ B aaMiniStackPopWord                  (_ministack*ministack,WP val);
+ B aaMiniStackPopDword                 (_ministack*ministack,HP val);
+ B aaMiniStackPopQuad                  (_ministack*ministack,QP val);
+ B aaMiniStackPopString                (_ministack*ministack,HP chars,H maxchars,VP str);
+ B aaMiniStackPopMulti                 (_ministack*ministack,VP fmt,...);
+ B aaMiniStackPeek                     (_ministack*ministack,H offset,H bytes,VP data);
+ B aaMiniStackPeekByte                 (_ministack*ministack,H offset,BP val);
+ B aaMiniStackPeekWord                 (_ministack*ministack,H offset,WP val);
+ B aaMiniStackPeekDword                (_ministack*ministack,H offset,HP val);
+ B aaMiniStackPeekQuad                 (_ministack*ministack,H offset,QP val);
+ B aaMiniStackPeekString               (_ministack*ministack,H index,HP chars,H maxchars,VP str);
+ B aaMiniStackDiscard                  (_ministack*ministack,H bytes);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaGeneralEventWaitingGet            (H id,HP count);
+ B aaGeneralEventWrite                 (H id,H msg,N lparm,H hparm,H bytes,VP data);
+ B aaGeneralEventWritef                (H id,H msg,N lparm,H hparm,VP fmt,...);
+ B aaGeneralEventRead                  (H id,_generalevent*genevent);
+ B aaGeneralEventPeek                  (H id,H index,_generalevent*genevent);
+ B aaGeneralEventDiscard               (H id);
+ B aaGeneralEventPurge                 (H id);
+
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaNetStatus                         (_netstatus*netstatus);
+ B aaNetLocalIpGet                     (_localip*localip,B getmac,B getbcast);
+ B aaNetInfoGet                        (_netinfo*netinfo);
+ B aaNetInfoToString                   (_netinfo*netinfo,H maxchars,VP str);
+ B aaNetOnlineStateGet                 (BP state);
+ B aaNetMacGet                         (VP mac,H ip,VP txt);
+ B aaNetIpPublicNext                   (HP ip,HP iterator);
+ B aaNetIpFromString                   (VP dot,HP ip);
+ B aaNetIpToString                     (H ip,VP dot);
+ B aaNetIpIsValid                      (VP dot);
+ B aaNetIpIsLoopBack                   (H bin);
+ B aaNetIpIsInternal                   (H bin);
+ B aaNetIpIsReserved                   (H bin);
+ B aaNetIpIsPublic                     (H bin);
+ B aaNetIpTypeGet                      (H bin,BP type);
+ B aaNetIpToDword                      (H ip,HP val);
+ B aaNetIpClassGet                     (H ip,BP cls);
+ B aaNetEmailIsValid                   (VP email);
+ B aaNetHostToDomain                   (VP host,VP domain);
+ B aaNetRfcCrcGet                      (VP mem,H bytes,WP crc);
+ B aaNetBrowserWritef                  (HP hinst,VP fmt,...);
+ B aaNetMimeToExtension                (VP mime,VP extension);
+ B aaNetExtensionToMime                (VP extension,VP mime);
+ B aaNetHostsFileEntryGet              (H index,VP domain,VP dotted,HP ip,BP iscmnt);
+ B aaNetHostsFileEntrySet              (H index,VP domain,VP dotted,H ip,B iscmnt);
+ B aaNetIsPortAvailable                (H ip,W port,B isudp);
+ B aaNetRandomUser                     (_randomuser*randomuser);
+
+
+ B aaNetCgiEnvGet                      (_cgienv*cgienv);
+
+ B aaNetCgiClientCreate                (HP handle,B hidden,VP env,VP dir,VP processfilename,VP command);
+ B aaNetCgiClientDestroy               (H handle);
+ B aaNetCgiClientStatus                (H handle,_cgiclientstatus*cgiclientstatus);
+ B aaNetCgiClientWrite                 (H handle,H bytes,VP data);
+ B aaNetCgiClientWritef                (H handle,VP fmt,...);
+ B aaNetCgiClientRead                  (H handle,H bytes,VP data);
+ B aaNetCgiClientPeek                  (H handle,H offset,H bytes,VP data);
+ B aaNetCgiClientDiscard               (H handle,H bytes);
+ B aaNetCgiClientStringLen             (H handle,HP chars,BP isdossy,BP stringmode);
+ B aaNetCgiClientStringRead            (H handle,HP chars,BP isdossy,BP stringmode,H maxchars,VP buf);
+ B aaNetCgiClientStringPeek            (H handle,HP chars,BP isdossy,BP stringmode,H maxchars,VP buf);
+ B aaNetCgiClientStringReadQuick       (H handle,H promptms,HP chars,BP isprompt,BP stringmode,H maxchars,VP buf);
+ B aaNetCgiClientInactivityReset       (H handle,B rflag,B xflag);
+ B aaNetCgiClientChildrenTerminate     (H handle);
+
+ B aaNetUrlSimplify                    (VP url,H chars,VP ourl);
+ B aaNetUrlDecode                      (VP url,H chars,VP durl);
+ B aaNetUrlPartsGet                    (_urlparts*urlparts,VP url,B spaceplus,B decode);
+ B aaNetUrlPartsToString               (_urlparts*urlparts,VP buf);
+ B aaNetUrlToFilename                  (VP rootpath,VP relative,VP filename);
+ B aaNetSetCookieDecode                (VP str,H chars,_cookie*cookie);
+
+ B aaNetAdrSet                         (_netadr*netadr,H ip,W port);
+ B aaNetAdrSetFromString               (_netadr*netadr,VP ip,W port);
+ B aaNetAdrCopy                        (_netadr*netadr,_netadr*snetadr);
+ B aaNetAdrToString                    (_netadr*netadr,VP string);
+ B aaNetAdrFromString                  (_netadr*netadr,VP string);
+ B aaNetAdrEqualsAdr                   (_netadr*netadr,_netadr*netadr2);
+ B aaNetAdrToHashGet                   (_netadr*netadr,BP hash);
+ B aaNetAdrFromFtpAdr                  (_netadr*netadr,VP string);
+
+ B aaNetSubnetFromIp                   (_netsubnet*netsubnet,H ip,H mask);
+
+
+ B aaNetDnsCreate                      (HP handle,VP address,B mode,B bypass);
+ B aaNetDnsDestroy                     (H handle);
+ B aaNetDnsStatus                      (H handle,_dnsstatus*dnsstatus);
+
+ B aaNetSniffCreate                    (HP handle,H ip);
+ B aaNetSniffDestroy                   (H handle);
+ B aaNetSniffStatus                    (H handle,_sniffstatus*sniffstatus);
+ B aaNetSniffPktRead                   (H handle,_sniffpkt*sniffpkt);
+ B aaNetSniffPktPeek                   (H handle,H index,_sniffpkt*sniffpkt,B dataflag);
+ B aaNetSniffPktDiscard                (H handle);
+ B aaNetSniffPktReturn                 (H handle);
+
+
+ B aaNetIcmpPktSet                     (_icmppkt*icmppkt,H remoteip,B type,B code,W id,W seq,W databytes);
+ B aaNetIcmpPktCopy                    (_icmppkt*icmppkt,_icmppkt*sicmppkt);
+ B aaNetIcmpCreate                     (HP handle);
+ B aaNetIcmpDestroy                    (H handle);
+ B aaNetIcmpStatus                     (H handle,_icmpstatus*icmpstatus);
+ B aaNetIcmpPktWrite                   (H handle,_icmppkt*icmppkt,VP data);
+ B aaNetIcmpPktRead                    (H handle,_icmppkt*icmppkt,H maxbytes,VP data);
+ B aaNetIcmpPktPeek                    (H handle,_icmppkt*icmppkt,H maxbytes,VP data);
+ B aaNetIcmpPktDiscard                 (H handle);
+
+ B aaNetUdpOpen                        (HP handle,H ip,W port);
+ B aaNetUdpCreate                      (HP handle,H ip,W port);
+ B aaNetUdpCreateAny                   (HP handle,H ip,W portstart,W portend);
+ B aaNetUdpDestroy                     (H handle);
+ B aaNetUdpFlowControlSet              (H handle,B state);
+ B aaNetUdpChecksumSet                 (H handle,B state);
+ B aaNetUdpStatus                      (H handle,_udpstatus*udpstatus);
+ B aaNetUdpBufferLengthSet             (H handle,H rbytes,H xbytes);
+ B aaNetUdpXmitSpeedSet                (H handle,D micro);
+ B aaNetUdpExtraDataSet                (H handle,H bytes);
+ B aaNetUdpPktDirectSet                (H handle,B state);
+ B aaNetUdpPktWrite                    (H handle,_udppkt*udppkt);
+ B aaNetUdpPktRead                     (H handle,_udppkt*udppkt);
+ B aaNetUdpPktPeek                     (H handle,_udppkt*udppkt,H pktoff,H maxbytes);
+ B aaNetUdpPktDiscard                  (H handle);
+ B aaNetUdpPktReturn                   (H handle);
+
+ B aaNetUdpPktAllocate                 (_udppkt**udppkt);
+ B aaNetUdpPktRelease                  (_udppkt*udppkt);
+ B aaNetUdpPktSet                      (_udppkt*udppkt,H remoteip,W remoteport,W databytes);
+ B aaNetUdpPktCopy                     (_udppkt*udppkt,_udppkt*sudppkt,B copydata);
+ B aaNetUdpPktAppend                   (_udppkt*udppkt,H bytes,VP data);
+ B aaNetUdpPktByteAppend               (_udppkt*udppkt,B val);
+ B aaNetUdpPktWordAppend               (_udppkt*udppkt,W val);
+ B aaNetUdpPktDwordAppend              (_udppkt*udppkt,H val);
+ B aaNetUdpPktQuadAppend               (_udppkt*udppkt,Q val);
+ B aaNetUdpPktTrim                     (_udppkt*udppkt,H bytes);
+
+ B aaNetStunClientCreate               (HP handle,H udphandle,H serverip,W serverport);
+ B aaNetStunClientDestroy              (H handle);
+ B aaNetStunClientStatus               (H handle,_stunclientstatus*stunclientstatus);
+
+ B aaNetTcpPortCreate                  (HP handle,H ip,W port,H extrabytes);
+ B aaNetTcpPortCreateAny               (HP handle,H ip,W portstart,W portend,H extrabytes);
+ B aaNetTcpPortDestroy                 (H handle);
+ B aaNetTcpPortStatus                  (H handle,_tcpportstatus*tcpportstatus);
+ B aaNetTcpPortCallNext                (H handle,HP callhandle,_tcpcallstatus*tcpcallstatus,HP iterator);
+
+ B aaNetTcpCallCreate                  (HP handle,H sip,W sport,VP host,H ip,W port);
+ B aaNetTcpCallDestroy                 (H handle);
+ B aaNetTcpCallDestroyProcSet          (H handle,V(*proc)(H));
+ B aaNetTcpCallCloseProtect            (H handle,B state);
+ B aaNetTcpCallClose                   (H handle);
+ B aaNetTcpCallVitalityGet             (H handle,HP state);
+ B aaNetTcpCallStatus                  (H handle,_tcpcallstatus*tcpcallstatus);
+ B aaNetTcpCallOfferWrite              (H handle,H pid,H tcpcallhandle,_tcpcallterms*tcpcallterms);
+ B aaNetTcpCallOfferRead               (H handle,_tcpcallterms*tcpcallterms);
+ B aaNetTcpCallOfferAccept             (HP handle,_tcpcallterms*tcpcallterms);
+ B aaNetTcpCallNext                    (HP handle,_tcpcallstatus*tcpcallstatus,HP iterator);
+ B aaNetTcpCallByIndex                 (HP handle,H index,_tcpcallstatus*tcpcallstatus);
+ B aaNetTcpCallAdopt                   (H handle,H adopteehandle);
+ B aaNetTcpCallAnswer                  (H handle);
+ B aaNetTcpCallWrite                   (H handle,H bytes,VP data);
+ B aaNetTcpCallWritef                  (H handle,VP fmt,...);
+ B aaNetTcpCallWriteByte               (H handle,B val);
+ B aaNetTcpCallWriteWord               (H handle,W val);
+ B aaNetTcpCallWriteDword              (H handle,H val);
+ B aaNetTcpCallWriteQuad               (H handle,Q val);
+ B aaNetTcpCallRead                    (H handle,H bytes,VP data);
+ B aaNetTcpCallReadByte                (H handle,BP val);
+ B aaNetTcpCallReadWord                (H handle,WP val);
+ B aaNetTcpCallReadDword               (H handle,HP val);
+ B aaNetTcpCallReadQuad                (H handle,QP val);
+ B aaNetTcpCallPeek                    (H handle,H offset,H bytes,VP data);
+ B aaNetTcpCallDiscard                 (H handle,H bytes);
+ B aaNetTcpCallFindByte                (H handle,H offset,H bytes,HP pos,B ch,B logic,H number);
+ B aaNetTcpCallReturn                  (H handle,H bytes);
+ B aaNetTcpCallPush                    (H handle,H bytes,VP data);
+ B aaNetTcpCallRelay                   (H handle,H bytes,H relayhandle,B how);
+ B aaNetTcpCallMirror                  (H handle,_tcpcallstatus*callstatus,H bytes,H han2,_tcpcallstatus*callstatus2,VP buf);
+ B aaNetTcpCallStringLen               (H handle,HP chars,BP stringmode);
+ B aaNetTcpCallStringRead              (H handle,HP chars,BP stringmode,H maxchars,VP buf);
+ B aaNetTcpCallStringPeek              (H handle,HP chars,BP stringmode,H maxchars,VP buf);
+ B aaNetTcpCallStringLook              (H handle,H fromoff,H index,HP count,HP offset,HP chars,BP stringmode,H maxchars,VP buf);
+ B aaNetTcpCallStringDiscard           (H handle);
+ B aaNetTcpCallPause                   (H handle,B rstate,B xstate);
+ B aaNetTcpCallExtraDataSet            (H handle,H bytes);
+ B aaNetTcpCallExtraDataGet            (H handle,HP bytes,PP ptr);
+ B aaNetTcpCallBufferLengthSet         (H handle,H rbytes,H xbytes);
+ B aaNetTcpCallSlicerLengthSet         (H handle,H rbytes,H xbytes);
+ B aaNetTcpCallNoDelaySet              (H handle,B state);
+ B aaNetTcpCallProtocolSet             (H handle,H protocol);
+ B aaNetTcpCallStageSet                (H handle,H stage);
+ B aaNetTcpCallMaxRateSet              (H handle,H rrate,H xrate);
+ B aaNetTcpCallInactivityReset         (H handle,B rflag,B xflag);
+
+ B aaNetSocksInit                      (_socks*socks,H ip,W port,VP user,VP pass);
+ B aaNetSocksHelloWrite                (H tcpcallhandle);
+ B aaNetSocksConnectIp4Write           (H tcpcallhandle,H ip,W port);
+
+ B aaNetHttpHeaderPrepare              (VP str,N result,B close,N cache,B chunked,G conlen,VP contype);
+ B aaNetHttpHeaderCookiePrepare        (VP str,B servermode,VP domain,VP path,G expires,VP name,VP fmt,...);
+ B aaNetHttpHeaderFieldCodeGet         (VP str,H chars,NP which,HP len);
+
+ B aaNetHttpResultReadFromString       (_httpresult*httpresult,H bytes,VP str);
+ B aaNetHttpHeaderReadFromString       (_httpheader*httpheader,H bytes,VP str);
+ B aaNetHttpRequestReadFromString      (_httprequest*httprequest,H bytes,VP str);
+
+ B aaNetHttpRequestWrite               (H tcpcallhandle,VP host,VP path,H start,H end,B condtype,_systime*condtime,B head,N cache,B close,VP fmt,...);
+ B aaNetHttpResultWrite                (H tcpcallhandle,H code,VP fmt,...);
+ B aaNetHttpResultRead                 (H tcpcallhandle,_httpresult*httpresult);
+ B aaNetHttpHeaderRead                 (H tcpcallhandle,_httpheader*httpheader);
+ B aaNetHttpRequestRead                (H tcpcallhandle,_httprequest*httprequest);
+ B aaNetHttpBasicAuthorizationWrite    (H tcpcallhandle,VP username,VP password);
+ B aaNetHttpCookieSet                  (H tcpcallhandle,VP domain,VP path,G expires,VP name,VP fmt,...);
+ B aaNetHttpChunkSizePeek              (H tcpcallhandle,HP bytes);
+ B aaNetHttpChunkSizeRead              (H tcpcallhandle,HP bytes);
+ B aaNetHttpChunkSizeWrite             (H tcpcallhandle,H bytes);
+ B aaNetHttpChunkWritef                (H tcpcallhandle,VP fmt,...);
+ B aaNetHttpChunkWrite                 (H tcpcallhandle,H bytes,VP data);
+
+ B aaNetSmtpResultRead                 (H tcpcallhandle,_smtpresult*smtpresult);
+ B aaNetFtpResultRead                  (H tcpcallhandle,_ftpresult*ftpresult);
+ B aaNetFtpMlsdRead                    (H tcpcallhandle,_ftpmlsd*ftpmlsd);
+
+ B aaNetRedisPacketRead                (H tcpcallhandle,BP type,GP arg,HP chars,H maxchars,VP buf);
+ B aaNetRedisPacketWritef              (H tcpcallhandle,VP fmt,...);
+ B aaNetRedisRespBegin                 (H tcpcallhandle,H elcount);
+ B aaNetRedisRespBulkAppend            (H tcpcallhandle,H bytes,VP data);
+ B aaNetRedisRespBulkAppendf           (H tcpcallhandle,VP fmt,...);
+ B aaNetRedisRespIntegerAppend         (H tcpcallhandle,G val);
+
+ B aaNetSsDbSizeRead                   (H tcpcallhandle,HP size);
+ B aaNetSsDbPacketWrite                (H tcpcallhandle,VP fmt,...);
+
+ B aaNetIrcAdrToParts                  (VP address,_ircadrparts*ircadrparts);
+ B aaNetIrcMsgRead                     (H tcpcallhandle,_ircmsg*ircmsg,VP raw);
+ B aaNetIrcMsgToString                 (_ircmsg*ircmsg,VP raw,VP str);
+
+ B aaNetPortListRead                   (_netportlist*netportlist);
+ B aaNetPortListStop                   (V);
+
+ B aaNetRttInit                        (_netrtt*rtt,H mintimeout,H maxtimeout,H initialtimeout);
+ B aaNetRttUpdate                      (_netrtt*rtt,H ms,B lost);
+
+ B aaNetServerCreate                   (HP handle,H ip,W port,H maxcalls,H extra);
+ B aaNetServerDestroy                  (H handle);
+ B aaNetServerStatus                   (H handle,_serverstatus*serverstatus,_tcpcallunit*tcpcallunit);
+ B aaNetServerCallsAllow               (H handle,B state);
+
+
+ B aaNetWockCreate                     (HP handle,H tcpcallhandle,B inbound,VP fmt,...);
+ B aaNetWockDestroy                    (H handle);
+ B aaNetWockStatus                     (H handle,_wockstatus*wockstatus);
+ B aaNetWockClose                      (H handle);
+ B aaNetWockPktWrite                   (H handle,B opc,B fin,H bytes,VP data);
+ B aaNetWockPktWritef                  (H handle,VP fmt,...);
+ B aaNetWockPktPeek                    (H handle,HP bytes,H maxbytes,BP opc,BP fin,VP data);
+ B aaNetWockPktRead                    (H handle,HP bytes,H maxbytes,BP opc,BP fin,VP data);
+ B aaNetWockPktDiscard                 (H handle);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaNetChunkReaderNew                 (_chunkreader*chunkreader,H tcpcallhandle);
+ B aaNetChunkReaderDelete              (_chunkreader*chunkreader);
+ B aaNetChunkReaderYield               (_chunkreader*chunkreader);
+ B aaNetChunkReaderDiscard             (_chunkreader*chunkreader);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaRedcallNew                        (_redcall*redcall,VP host,W port,VP auth,B(*proc)(_redcall*,Q,B,B,_redcallpkt*));
+ B aaRedcallDelete                     (_redcall*redcall);
+ B aaRedcallYield                      (_redcall*redcall,QP seq,BP isnew,BP isend);
+ B aaRedcallPktWritef                  (_redcall*redcall,QP seq,VP fmt,...);
+ B aaRedcallPktPeek                    (_redcall*redcall,QP seq,BP isnew,BP isend);
+ B aaRedcallPktDiscard                 (_redcall*redcall);
+ B aaRedcallPktBug                     (_redcall*redcall);
+ B aaRedcallProc                       (_redcall*redcall,Q seq,B isnew,B isend,_redcallpkt*redcallpkt);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaSsDbClientNew                     (_ssdbclient*ssdbclient,VP host,W port,VP auth);
+ B aaSsDbClientDelete                  (_ssdbclient*ssdbclient);
+ B aaSsDbClientYield                   (_ssdbclient*ssdbclient);
+ B aaSsDbClientWrite                   (_ssdbclient*ssdbclient,QP seq,VP fmt,...);
+ B aaSsDbClientRead                    (_ssdbclient*ssdbclient,QP seq,HP bytes,HP lineidx,HP linecnt,NP code,H maxbytes,VP buf);
+ B aaSsDbClientPeek                    (_ssdbclient*ssdbclient,QP seq,HP bytes,HP lineidx,HP linecnt,NP code,H maxbytes,VP buf);
+ B aaSsDbClientDiscard                 (_ssdbclient*ssdbclient);
+ B aaSsDbClientListReceive             (_ssdbclient*ssdbclient,QP seq);
+ B aaSsDbClientListEntryGet            (_ssdbclient*ssdbclient,H index,_ssdblistentry*ssdblistentry);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaTorProcessSnapshot                (_list*list);
+ B aaTorProcessEntryGet                (_list*list,H index,_torprocessentry**tpep);
+ B aaTorProcessKill                    (_list*list,H index);
+ B aaTorProcessLaunch                  (W cport,W sport,H maxage,VP exefile,...);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaMySqlNew                          (_mysql*mysql,_options*options,B(*proc)(_mysql*,Q,H,H,H,H,H,VP));
+ B aaMySqlNewEx                        (_mysql*mysql,VP host,W port,VP user,VP pass,B(*proc)(_mysql*,Q,H,H,H,H,H,VP));
+ B aaMySqlDelete                       (_mysql*mysql);
+ B aaMySqlYield                        (_mysql*mysql);
+ B aaMySqlQuery                        (_mysql*mysql,QP seq,VP fmt,...);
+ B aaMySqlPeek                         (_mysql*mysql,H indexoff,H maxbytes,VP data);
+ B aaMySqlDiscard                      (_mysql*mysql);
+ B aaMySqlRead                         (_mysql*mysql,H maxbytes,VP data);
+ B aaMySqlQueryExInit                  (_mysql*mysql);
+ B aaMySqlQueryExMore                  (_mysql*mysql,VP fmt,...);
+ B aaMySqlQueryExExec                  (_mysql*mysql,QP seq);
+ B aaMySqlBeautifierReset              (_mysql*mysql);
+ B aaMySqlBeautifierRead               (_mysql*mysql,H maxchars,VP str);
+ B aaMySqlProc                         (_mysql*mysql,Q seq,H msg,H row,H col,H code,H len,VP data);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+
+
+ B aaShellNew                          (_shell*shell,VP fmt,...);
+ B aaShellDelete                       (_shell*shell);
+ B aaShellYield                        (_shell*shell,H iterations);
+ B aaShellLinePointer                  (_shell*shell,H line,HP chars,PP ptr);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaUpdateAreaReset                   (_updatearea*updatearea);
+ B aaUpdateAreaAdd                     (_updatearea*updatearea,_rect*rect);
+ B aaUpdateAreaRemove                  (_updatearea*updatearea,_rect*rect);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaColorHalfToneGet                  (_rgba*rgba,B index);
+ B aaColorHalfToneCalculate            (_rgba*rgba,_cord*cord,BP index,_rgba*orgba);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaFontCreate                        (HP handle,VP facettf,N logw,N logh,B weight,B italic,B underline,B prefmono,B smoothed,H charset);
+ B aaFontCreateUsingResource           (HP handle,H resnum,N logw,N logh,B weight,B italic,B underline,B prefmono,B smoothed,H charset);
+ B aaFontCreateFixedWidth              (HP handle,N logw,N logh,B weight,B italic,B underline,B smoothed,H charset);
+ B aaFontDestroy                       (H handle);
+ B aaFontMonoForceSet                  (H handle,B state);
+ B aaFontMonoForceSizeSet              (H handle,_size*size);
+ B aaFontStatus                        (H handle,_fontstatus*fontstatus);
+ B aaFontCharRectGet                   (H handle,_rect*rect,B ch);
+ B aaFontStringCharRectsGet            (H handle,H maxrects,_rect*rects,H maxchars,VP fmt,...);;
+
+ B aaFontStringSizeGet                 (H handle,_size*size,H maxchars,VP fmt,...);
+ B aaFontStringSizeFit                 (H handle,_size*size,_size*rsize,VP rstr,VP fmt,...);
+ B aaFontStringCharRectGet             (H handle,_rect*rect,H pos,H maxchars,VP fmt,...);
+
+ B aaFontFamilyList                    (_data*data);
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaPixelStyleInit                    (_pixelstyle*pixelstyle);
+ B aaPixelStyleSet                     (_pixelstyle*pixelstyle,H setbit,B mode,N np0,N np1,N np2,N np3,D dp0,D dp1,H applyhandle);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaSurfaceCreate                     (HP handle,_size*size);
+ B aaSurfaceMinMaxCreate               (HP handle,_size*size,_size*minsize,_size*maxsize);
+ B aaSurfaceMake                       (HP handle,_size*size,VP mem);
+ B aaSurfaceLoad                       (HP handle,VP filename,VP useextension);
+ B aaSurfaceLoadUsingResource          (HP handle,H resnum,VP useextension);
+ B aaSurfaceLoadFromMemory             (HP handle,H bytes,VP mem,VP useextension);
+ B aaSurfaceDuplicate                  (HP handle,H shandle);
+ B aaSurfaceFindByHwnd                 (HP handle,HWND hwnd);
+ B aaSurfaceSave                       (H handle,_rect*r1,B flip,VP filename);
+ B aaSurfaceSaveToMemory               (H handle,_rect*r1,B flip,VP useextension,HP bytes,H maxbytes,VP mem);
+ B aaSurfaceReMake                     (H handle,_size*size,VP mem);
+ B aaSurfaceDestroy                    (H handle);
+ B aaSurfaceIgnoreWMPaint              (H handle,B state);
+ B aaSurfaceMinMaxSizeSet              (H handle,_size*minsize,_size*maxsize);
+ B aaSurfaceMaximize                   (H handle,B state);
+ B aaSurfaceRequiresResize             (H handle,_rect*rect);
+ B aaSurfaceElseProcSet                (H handle,N(*Proc)(HWND hWindow,H uiMessage,H uiParam,N ulParam,BP issuedef));
+ B aaSurfaceStatus                     (H handle,_surfacestatus*surfacestatus);
+ B aaSurfaceCursorCapture              (H handle,B state);
+ B aaSurfaceMoveableSet                (H handle,B state);
+ B aaSurfaceSizeableSet                (H handle,B state);
+ B aaSurfaceResizeCounterGet           (H handle,HP counter);
+ B aaSurfaceResizeCounterReset         (H handle);
+ B aaSurfaceDisableRect                (H handle,_rect*r1);
+ B aaSurfaceClipperGet                 (H handle,_rect*r1);
+ B aaSurfaceClipperSet                 (H handle,_rect*r1);
+ B aaSurfaceFlipSet                    (H handle,B hflipstate,B vflipstate);
+ B aaSurfaceBlendSet                   (H handle,B state);
+ B aaSurfaceAlphaSet                   (H handle,B alpha);
+ B aaSurfaceVisualize                  (H handle,B tool,H parent);
+ B aaSurfaceRoundedSet                 (H handle,B state,Z rwid,Z rhit);
+ B aaSurfaceShow                       (H handle,B state);
+ B aaSurfaceTraySet                    (H handle,H iconresnum,VP fmt,...);
+ B aaSurfaceTrayClickClear             (H handle);
+ B aaSurfaceIsTrayClicked              (H handle,_cord*cord,BP isright);
+ B aaSurfaceTitleSet                   (H handle,VP fmt,...);
+ B aaSurfaceTitleAppendf               (H handle,VP fmt,...);
+ B aaSurfaceIconSetUsingResource       (H handle,H resnum,H index);
+ B aaSurfaceFocus                      (H handle);
+ B aaSurfaceMinimize                   (H handle);
+ B aaSurfaceRestore                    (H handle);
+ B aaSurfaceRectSet                    (H handle,_rect*rect);
+ B aaSurfaceCordSet                    (H handle,_cord*cord);
+ B aaSurfaceSizeSet                    (H handle,_size*size);
+ B aaSurfaceRectGet                    (H handle,_rect*rect);
+ B aaSurfaceCordGet                    (H handle,_cord*cord);
+ B aaSurfaceSizeGet                    (H handle,_size*size);
+ B aaSurfaceViewportSet                (H handle,_rect*rect);
+ B aaSurfaceCenter                     (H handle,_rect*rect);
+ B aaSurfaceRectAlign                  (H handle,_rect*rect,B ha,B va);
+ B aaSurfaceMonitorAlign               (H handle,B mid,B ha,B va);
+ B aaSurfaceCordAdjust                 (H handle,N xamnt,N yamnt);
+ B aaSurfaceOnTop                      (H handle,B state);
+ B aaSurfaceCordToVisualCord           (H handle,_cord*cord,_cord*vcord);
+ B aaSurfaceVisualCordToCord           (H handle,_cord*vcord,_cord*cord);
+ B aaSurfaceCaretReset                 (H handle);
+ B aaSurfaceCaretShow                  (H handle,B state);
+ B aaSurfaceCaretRectSet               (H handle,_rect*rect);
+ B aaSurfaceCaretGet                   (H handle,BP isshown,_rect*rect,HP counter);
+ B aaSurfaceCaretSpeedSet              (H handle,H speed);
+ B aaSurfaceBlit                       (H handle,_rect*rect,H dhandle,_rect*drect,B flip);
+ B aaSurfaceImageDrawUsingSurface      (H handle,_rect*imagerect,H shandle,_rect*srect,B hflip,B vflip,B xalpha);
+ B aaSurfaceImageDraw                  (H handle,_size*imgsize,_rect*imgrect,VP img,_rect*drect,B hflip,B vflip,B xalpha);
+ B aaSurfaceImageGrab                  (H handle,_rect*rect,_cord*imgcord,_size*imgsize,VP img);
+ B aaSurfaceImageTile                  (H handle,_size*imgsize,_rect*imgrect,VP img,_rect*drect,B hflip,B vflip,B xalpha);
+ B aaSurfaceImageWarp                  (H handle,_size*imgsize,_rect*imgrect,VP img,_cord*c1,_cord*c2,_cord*c3,_cord*c4,B hflip,B vflip,B xalpha);
+ B aaSurfaceImageRgbaReplace           (H handle,_rect*rect,_rgba*p1,_rgba*p2,B logic,B checkalpha);
+ B aaSurfacePixelStyleSet              (H handle,_pixelstyle*pixelstyle);//VP data);
+ B aaSurfacePixelStyleGet              (H handle,_pixelstyle*pixelstyle);//VP data);
+ B aaSurfacePixelPutProc               (VP surfs,N x,N y,_rgba*p1);
+ B aaSurfacePixelSetProc               (VP surfs,N x,N y,_rgba*p1);
+ B aaSurfacePixelGetProc               (VP surfs,N x,N y,_rgba*p1);
+ B aaSurfacePixelPutProcGet            (H handle,PP proc);
+ B aaSurfacePixelSetProcGet            (H handle,PP proc);
+ B aaSurfacePixelGetProcGet            (H handle,PP proc);
+ B aaSurfacePixelPutProcSet            (H handle,B(*Proc)(VP,N,N,_rgba*));
+ B aaSurfacePixelSetProcSet            (H handle,B(*Proc)(VP,N,N,_rgba*));
+ B aaSurfacePixelGetProcSet            (H handle,B(*Proc)(VP,N,N,_rgba*));
+ B aaSurfacePixelPut                   (H handle,_cord*c1,_rgba*p1);
+ B aaSurfacePixelSet                   (H handle,_cord*c1,_rgba*p1);
+ B aaSurfacePixelGet                   (H handle,_cord*c1,_rgba*p1);
+ B aaSurfaceMaskNotSet                 (H handle,_rgba*p1);
+ B aaSurfaceMaskNotGet                 (H handle,_rgba*p1);
+ B aaSurfaceMaskSet                    (H handle,_rgba*p1);
+ B aaSurfaceMaskGet                    (H handle,_rgba*p1);
+ B aaSurfaceLine                       (H handle,_cord*c1,_cord*c2,_rgba*p1);
+ B aaSurfaceClear                      (H handle,_rgba*p1);
+ B aaSurfaceFill                       (H handle,_rect*rect,_rgba*p1);
+ B aaSurfaceFrame                      (H handle,_rect*rect,_rgba*p1);
+ B aaSurfaceFramePart                  (H handle,_rect*rect,_rgba*p1,B dol,B dot,B dor,B dob,B dotlbr,B dotrbl);
+ B aaSurfaceFillFrame                  (H handle,_rect*rect,B thickness,_rgba*p1,_rgba*p2);
+ B aaSurfacePoly                       (H handle,_cord**cords,_rgba*p1,_rgba*p2);
+ B aaSurfaceBar                        (H handle,_rect*rect,_rgba*p1,_rgba*p2,H hsk,H vsk);
+ B aaSurfaceTriangle                   (H handle,_cord*c1,_cord*c2,_cord*c3,_rgba*p1);
+ B aaSurfaceTriangleFill               (H handle,_cord*c1,_cord*c2,_cord*c3,_rgba*p1);
+ B aaSurfaceEllipse                    (H handle,_rect*rect,_rgba*p1);
+ B aaSurfaceEllipseFill                (H handle,_rect*rect,_rgba*p1);
+ B aaSurfaceEllipseFillFrame           (H handle,_rect*rect,N thick,_rgba*p1,_rgba*p2);
+ B aaSurfaceFloodFill                  (H handle,_rect*r1,_cord*c1,_rgba*p1);
+ B aaSurfaceArc                        (H handle,_rect*rect,N astart,N astop,N arot,_rgba*p1);
+ B aaSurfaceRoundedFrame               (H handle,_rect*rect,N r,_rgba*p1);
+ B aaSurfaceRoundedFill                (H handle,_rect*rect,N r,_rgba*p1);
+ B aaSurfaceChamfer                    (H handle,_rect*rect,B state,_rgba*p1,N rad);
+ B aaSurfaceGimpTile                   (H handle,_rect*rect,N sz,_rgba*p1,_rgba*p2);
+ B aaSurfaceDragBar                    (H handle,_rect*rect,_rgba*p1,_rgba*p2);
+ B aaSurfaceLabel                      (H handle,_rect*rect,_rgba*p1,H fhandle,_rgba*p2,N xadj,N yadj,N ha,N va,H maxchars,VP fmt,...);
+ B aaSurfaceFuzz                       (H handle,_rect*rect,_rgba*p1,B level,H xmod,H ymod);
+ B aaSurfacePrintf                     (H handle,_cord*cord,H fhandle,_rgba*p1,H maxchars,VP fmt,...);
+ B aaSurfaceScroll                     (H handle,_rect*rect,N xpixels,N ypixels,_rgba*pn);
+ B aaSurfaceBevel                      (H handle,_rect*rect,_rgba*p1,B state);
+ B aaSurfaceBlur                       (H handle,_rect*rect,B hstrength,B vstrength);
+ B aaSurfaceConvolve                   (H handle,_rect*rect,FP matrix,N n,_rgba*p1,B absflag);
+ B aaSurfaceButtonFrame                (H handle,_rect*r1,B state,B depth);
+ B aaSurfaceGradientFill               (H handle,_rect*rect,_cord*c1,_rgba*p1,_rgba*p2,B type,F tilt);
+ B aaSurfaceField                      (H handle,_rect*rect,_rgba*p1,H fhandle,_rgba*p2,B masked,N xadj,N yadj,B usecaret,H pos,H maxchars,VP fmt,...);
+ B aaSurfaceLog                        (H handle,_rect*rect,_rgba*p1,H fhandle,_rgba*p2,VP fmt,...);
+ B aaSurfaceLogWriteSet                (H handle,B state);
+ B aaSurfaceUpdateAreaAdd              (H handle,_rect*rect,B update);
+ B aaSurfaceUpdateAreaRemove           (H handle,_rect*rect,B update);
+ B aaSurfaceUpdateAreaReset            (H handle);
+ B aaSurfaceUpdate                     (H handle);
+ B aaSurfaceUpdateAndStatus            (H handle,_surfacestatus*status);
+ B aaSurfaceCaptureScreen              (H handle,_rect*r1,HWND hwnd,_rect*r2,B vflip);
+ B aaSurfaceExtraDataSet               (H handle,H bytes);
+ B aaSurfaceExtraDataGet               (H handle,HP bytes,PP ptr);
+
+ B aaSurfaceDropAccept                 (H handle,B state);
+ B aaSurfaceDropClear                  (H handle);
+
+ B aaSurfaceSpotIdRangeReserve         (H handle,HP firstid,H count);
+ B aaSurfaceSpotFindByNumber           (H handle,H sn,_surfacespot**surfacespot);
+ B aaSurfaceSpotFindById               (H handle,H id,_surfacespot**surfacespot);
+ B aaSurfaceSpotAdd                    (H handle,H id,_surfacespot**surfacespot);
+ B aaSurfaceSpotRemove                 (H handle,H id);
+ B aaSurfaceSpotPurge                  (H handle);
+ B aaSurfaceSpotSet                    (H handle,H id,H type,Z depth,N x,N y,H w,H h,_surfacespot**surfacespot);
+ B aaSurfaceSpotStateSet               (H handle,H id,B isover,B ispress,B isfocus,B ispaint,_surfacespot**surfacespot);
+
+ B aaSurfaceArrow                      (H handle,_cord*cd1,_cord*cd2,N which,N thick,N hang,D ang,_rgba*pn1,_rgba*pn2);
+ B aaSurfaceCheckMark                  (H handle,_rect*r1,_rgba*p1,_rgba*p2,_rgba*p3);
+ B aaSurfaceCrossMark                  (H handle,_rect*r1,_rgba*p1,_rgba*p2,_rgba*p3);
+ B aaSurfaceRadioButton                (H handle,_rect*r1,B state,_rgba*p1,_rgba*p2,_rgba*p3);;
+ B aaSurfaceCloseIcon                  (H handle,_rect*r1,_rgba*p1);
+ B aaSurfaceMaximizeIcon               (H handle,_rect*r1,_rgba*p1);
+ B aaSurfaceRestoreIcon                (H handle,_rect*r1,_rgba*p1);
+ B aaSurfaceMinimizeIcon               (H handle,_rect*r1,_rgba*p1);
+
+ B aaSurfaceCaption                    (H handle,H spotidbase,H fonthandle,VP fmt,...);
+ B aaSurfaceCaptionButtons             (H handle,H spotidbase,H usebits,H overbits,H pressbits);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaImageYuv420ToBgra                 (_size*size,Z ystride,Z uvstride,VP yplane,VP uplane,VP vplane,VP dest);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaFancyTextInit                     (_fancytext*fancytext,H surfacehandle,H fonthandle);
+ B aaFancyTextRectSet                  (_fancytext*fancytext,_rect*rect);
+ B aaFancyTextSelSet                   (_fancytext*fancytext,H selstart,H selcount);
+ B aaFancyTextCaretSet                 (_fancytext*fancytext,H position,B type,B state);
+ B aaFancyTextPositionSet              (_fancytext*fancytext,H position);
+ B aaFancyTextWrite                    (_fancytext*fancytext,H chars,VP txt);
+ B aaFancyTextWritef                   (_fancytext*fancytext,VP fmt,...);
+ B aaFancyTextPaint                    (_fancytext*fancytext);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaCursorSet                         (B id);
+ B aaCursorGet                         (BP id);
+ B aaCursorSimulate                    (B flag,N x,N y,H wid,H hit,N etc,H del);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaAppBarSet                         (B state,B orientation,H depth);
+ B aaAppBarGet                         (BP state,BP orientation,_rect*rect);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaGifCreate                         (HP handle,VP filename);
+ B aaGifCreateUsingResource            (HP handle,H resnum);
+ B aaGifDestroy                        (H handle);
+ B aaGifStatus                         (H handle,_gifstatus*gifstatus);
+ B aaGifRewind                         (H handle);
+ B aaGifFrameNext                      (H handle,PP img);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaInputKeySimulate                  (B virtkey,B isscan,B isdown);
+ B aaInputKeyPairSimulate              (B virtkey1,B virtkey2,H sleep);
+ B aaInputKeyPattern                   (H state);
+ B aaInputKeyStringSimulate            (VP fmt,...);
+ B aaInputKeyCharSimulate              (B ch,B count);
+ B aaInputStateGet                     (_inputstate*inputstate);
+ B aaInputEngine                       (_inputengine*inputengine);
+ B aaInputEventToString                (Q eventbit,H from,H count,VP str);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaDisplaySet                        (_size*size,B bits,B revert);
+ B aaDisplayInfoGet                    (_displayinfo*displayinfo);
+ B aaDisplayMonitorFromCord            (_displayinfo*displayinfo,_cord*cord,BP monitorindex);
+ B aaDisplayGammaGet                   (WP gbuf);
+ B aaDisplayGammaSet                   (WP gbuf);
+ B aaDisplayGammaBrightnessSet         (WP gbuf,B brightness);
+ B aaDisplayBrightnessSet              (B brightness);
+ B aaDisplayBrightnessFlash            (B count,H sleep);
+ B aaDisplayPixelGet                   (_cord*cord,_rgba*pn);
+ B aaDisplayPixelSet                   (_cord*cord,_rgba*pn);
+ B aaDisplayInfoToString               (_displayinfo*displayinfo,VP str);
+ B aaDisplayMonitorPowerSet            (B state);
+ B aaDisplayPowerBrightnessGet         (BP acordc,BP aclev,BP dclev);
+ B aaDisplayPowerBrightnessSet         (B acordc,B aclev,B dclev);
+ B aaDisplayToMm                       (_displayinfo*displayinfo,B monitorindex,_cord*pixel,DP xmm,DP ymm);
+ B aaDisplayFromMm                     (_displayinfo*displayinfo,B monitorindex,D xmm,D ymm,_cord*pixel);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaAudioCountGet                     (BP playcount,BP reccount);
+ B aaAudioNameGet                      (B id,B rec,VP name);
+
+ B aaAudioModeSet                      (_audiomode*audiomode,H frequency,B bits,B channels);
+ B aaAudioModeCopy                     (_audiomode*audiomode,_audiomode*saudiomode);
+ B aaAudioModeIsValid                  (_audiomode*audiomode);
+
+
+ B aaAudioBpmToSamples                 (_audiomode*audiomode,D bpm,HP samples);
+ B aaAudioBpmFromSamples               (_audiomode*audiomode,H samples,DP bpm);
+ B aaAudioSamplesToTime                (_audiomode*audiomode,H samples,DP ms);
+ B aaAudioSamplesFromTime              (_audiomode*audiomode,D ms,HP samples);
+
+
+ B aaAudioToFloats                     (_audiomode*audiomode,H isamples,VP idata,FP odata);
+ B aaAudioFromFloats                   (_audiomode*audiomode,H isamples,FP idata,VP odata);
+
+ B aaAudioConverterInit                (_audioconverter*audioconverter,_audiomode*imode,_audiomode*omode);
+ B aaAudioConverterProcess             (_audioconverter*audioconverter,H isamples,VP idata,D tempo,HP osamples,VP odata);
+
+ B aaAudioPitchTempoGet                (_aapitchtempo*aapitchtempo,N octave,N note,D fine,N mode);
+
+ B aaAudioPitchShiftInit               (_aapitchshift*aapitchshift,N framesize,N osamp);
+ B aaAudioPitchShift                   (_aapitchshift*aapitchshift,F amount,N isamps,F rate,FP indata,FP outdata);
+
+
+
+ B aaAudioCreate                       (HP handle,B id,B rec,_audiomode*audiomode,H blocksize,H maxblocks,B(*proc)(H,H,H,H,H,VP,VP));
+ B aaAudioDestroy                      (H handle);
+ B aaAudioStatus                       (H handle,_audiostatus*audiostatus);
+ B aaAudioReset                        (H handle);
+ B aaAudioPause                        (H handle,B state);
+ B aaAudioWrite                        (H handle,H samples,VP data);
+ B aaAudioRead                         (H handle,H samples,VP data);
+ B aaAudioPeek                         (H handle,H sample,H samples,VP data);
+ B aaAudioDiscard                      (H handle,H samples);
+ B aaAudioMuteSet                      (H handle,B state);
+ B aaAudioVolumeSet                    (H handle,W volume);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaBiquadInit                        (_biquad*bq,B type,H srate,D freq,D gain,D width);
+ B aaBiquadProcess                     (_biquad*bq,D sin,DP sout);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaMathDct                           (IP block,B fwd,B descale);
+ B aaMathSinTableCreate                (FP*table);
+ B aaMathCosTableCreate                (FP*table);
+ B aaMathDtmfSet                       (H samples,_audiomode*audiomode,N amp,B code,VP buf);
+ B aaMathLatLongDistanceGet            (D lat1,D lon1,D lat2,D lon2,DP distance);
+ B aaMathLatLongCordGet                (D lat,D lon,_size*size,_cord*cord);
+ D aaMathDoubleRound                   (D val,N numer,N denom);
+ H aaMathRand32                        (H lo,H hi);
+ Q aaMathRand64                        (Q lo,Q hi);
+ D aaMathRandDouble                    (D lo,D hi);
+ B aaMathRandomGet                     (HP val);
+ B aaMathTwisterInit                   (_twister*twister,H seed,HP key);
+ H aaMathTwisterInt32                  (_twister*twister);
+ N aaMathTwisterInt31                  (_twister*twister);
+ D aaMathTwisterReal1                  (_twister*twister);
+ D aaMathTwisterReal2                  (_twister*twister);
+ D aaMathTwisterReal3                  (_twister*twister);
+ D aaMathTwisterRes53                  (_twister*twister);
+ B aaMathAngleToCord                   (D angle,_rect*rect,_cord*cord);
+ B aaMathLog2                          (Y val,YP res);
+ B aaMathLog2D                         (D val,DP res);
+ B aaMathIsPowerOfTwo                  (Q val);
+
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaBigInit                           (_big*r);
+ B aaBigCopy                           (_big*r,_big*a);
+ B aaBigDump                           (_big*r,B showdigits,VP fmt,...);
+ B aaBigBaseSet                        (_big*r,Z base);
+
+ B aaBigToInt                          (_big*r,GP val);
+ B aaBigFromInt                        (_big*r,G val);
+
+ B aaBigToString                       (_big*r,H maxchars,VP str);
+ B aaBigFromString                     (_big*r,H chars,VP str);
+ B aaBigFromStringf                    (_big*r,VP fmt,...);
+
+ B aaBigIsOdd                          (_big*r);
+ B aaBigIsEven                         (_big*r);
+ B aaBigIsZero                         (_big*r);
+ B aaBigIsOne                          (_big*r);
+
+ B aaBigCompare                        (_big*r,_big*a,ZP dif);
+ B aaBigAdd                            (_big*r,_big*a,_big*b);
+ B aaBigSub                            (_big*r,_big*a,_big*b);
+ B aaBigMul                            (_big*r,_big*a,_big*b);
+ B aaBigDiv                            (_big*r,_big*a,_big*b);
+ B aaBigMod                            (_big*r,_big*a,_big*b);
+ B aaBigPow                            (_big*r,_big*a,_big*b);
+
+ B aaBigCompareInt                     (_big*r,G a,ZP dif);
+ B aaBigAddInt                         (_big*r,_big*a,G b);
+ B aaBigSubInt                         (_big*r,_big*a,G b);
+ B aaBigMulInt                         (_big*r,_big*a,G b);
+ B aaBigDivInt                         (_big*r,_big*a,G b);
+ B aaBigModInt                         (_big*r,_big*a,G b);
+ B aaBigPowInt                         (_big*r,_big*a,G b);
+
+ B aaBigInc                            (_big*r);
+ B aaBigDec                            (_big*r);
+ B aaBigSquareRoot                     (_big*r,_big*a);
+ B aaBigIsPrime                        (_big*r,Z rounds);
+
+ B aaBigShiftLeft                      (_big*r,_big*a,_big*b);
+ B aaBigShiftRight                     (_big*r,_big*a,_big*b);
+ B aaBigShiftLeftInt                   (_big*r,_big*a,G b);
+ B aaBigShiftRightInt                  (_big*r,_big*a,G b);
+
+ B aaBigBitSet                         (_big*r,_big*a);
+ B aaBigBitIsSet                       (_big*r,_big*a);
+ B aaBigBitClear                       (_big*r,_big*a);
+
+ B aaBigBitSetInt                      (_big*r,G a);
+ B aaBigBitIsSetInt                    (_big*r,G a);
+ B aaBigBitClearInt                    (_big*r,G a);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaVidCapCountGet                    (BP count);
+ B aaVidCapNameGet                     (B id,VP name);
+ B aaVidCapCreate                      (HP handle,B id);
+ B aaVidCapCreateAutoDetect            (HP handle,B id,_size*size);
+ B aaVidCapDestroy                     (H handle);
+ B aaVidCapStatus                      (H handle,_vidcapstatus*vidcapstatus);
+ B aaVidCapFormatSet                   (H handle,_size*size,B bits);
+ B aaVidCapPreviewSet                  (H handle,B state);
+ B aaVidCapFrameIsReady                (H handle);
+ B aaVidCapFrameNext                   (H handle);
+ B aaVidCapSourceBoxShow               (H handle);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaWavLoad                           (_wav*wav,VP filename);
+ B aaWavLoadUsingResource              (_wav*wav,H resnum);
+ B aaWavRelease                        (_wav*wav);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaIniOpen                           (_ini*ini,VP filename);
+ B aaIniClose                          (_ini*ini);
+ B aaIniEntryGet                       (_ini*ini,H index,PP fmem,PP dmem,VP txt);
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaFilePartsGet                      (VP filename,_fileparts*fileparts);
+ B aaFileEqualsFile                    (VP filename,VP filename2);
+ B aaFileInfoGet                       (VP filename,QP bytes,BP isfolder,_systime*ctime,_systime*mtime,_fileid*id);
+ B aaFileInformationGet                (VP filename,_fileinformation*fileinformation);
+ B aaFileExists                        (VP filename,...);
+ B aaFileDelete                        (VP filename,...);
+ B aaFileCopy                          (VP filename,VP destfilename,B allowoverwrite);
+ B aaFileRename                        (VP filename,VP destfilename);
+ B aaFileSaveFromMemory                (VP filename,H bytes,VP mem);
+ B aaFileAppendFromMemory              (VP filename,H bytes,VP mem);
+ B aaFileAppendf                       (VP filename,VP fmt,...);
+ B aaFileLoadToMemory                  (VP filename,Q fromoffset,H bytes,PP mem,HP bytesloaded);
+ B aaFileLoadToBuffer                  (VP filename,Q fromoffset,H bytes,VP mem,HP bytesloaded);
+ B aaFileUniqueCreate                  (VP filename,VP path,H chars,B alpha,B num,VP ext,B docreate);
+ B aaFileTimeSet                       (VP filename,_systime*ctime,_systime*mtime);
+ B aaFileSizeSet                       (VP filename,Q bytes);
+ B aaFileIsUpxCompressed               (VP filename);
+ B aaFileAttributesGet                 (VP filename,_fileattributes*fileattribs);
+ B aaFileAttributesSet                 (VP filename,_fileattributes*fileattribs);
+ B aaFileDetailsGet                    (VP filename,_filedetails*filedetails,VP string);
+ B aaFileFolderCreate                  (VP fmt,...);
+ B aaFileFolderDelete                  (VP fmt,...);
+ B aaFileFolderExists                  (VP fmt,...);
+ B aaFileFolderWorkingSet              (VP fmt,...);
+ B aaFileFolderWorkingGet              (VP foldername);
+ B aaFileFolderRename                  (VP foldername,VP newfoldername);
+ B aaFileFolderTreeCreate              (VP foldername,B levels,B hex);
+ B aaFileFolderTreeDelete              (VP foldername,B levels,B hex,B delfiles);
+ B aaFileUnitLoad                      (_fileunit*unit,VP fmt,...);//VP filename);
+ B aaFileUnitRelease                   (_fileunit*unit);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaFileBoxOpen                       (H surfacehandle,VP initdir,VP initfile,VP fltr,B maxfiles,VP caption);
+ B aaFileBoxClose                      (V);
+ B aaFileBoxStatus                     (_fileboxstatus*fileboxstatus);
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaFolderBoxOpen                     (H surfacehandle,VP initdir,VP caption);
+ B aaFolderBoxClose                    (V);
+ B aaFolderBoxStatus                   (_folderboxstatus*folderboxstatus);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaDirOpen                           (HP handle,B gettimes,VP filespec);
+ B aaDirClose                          (H handle);
+ B aaDirStatus                         (H handle,_dirstatus*dirstatus,H iterations);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaDirWalkerCreate                   (HP handle,VP root,VP spec,B incfiles,H maxdepth,B(*proc)(H,VP,_dirwalkerstatus*,_direntry*));
+ B aaDirWalkerDestroy                  (H handle);
+ B aaDirWalkerStatus                   (H handle,_dirwalkerstatus*dirwalkerstatus,H iterationsa,H iterationsb);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaDriveInfoGet                      (B drive,_driveinfo*driveinfo);
+ B aaDriveEject                        (B drive,B state);
+ B aaDriveListGet                      (_drivelist*drivelist);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaFileStreamCreate                  (HP handle,VP filename,B create,B rwmode,B shmode,B cmode,B deleteon);
+ B aaFileStreamDestroy                 (H handle);
+ B aaFileStreamStatus                  (H handle,_filestreamstatus*filestreamstatus);
+ B aaFileStreamInfoGet                 (H handle,QP bytes,_systime*ctime,_systime*mtime,_fileid*id);
+ B aaFileStreamRead                    (H handle,H bytes,VP data);
+ B aaFileStreamPeek                    (H handle,H bytes,VP data);
+ B aaFileStreamWrite                   (H handle,H bytes,VP data);
+ B aaFileStreamWritef                  (H handle,VP fmt,...);
+ B aaFileStreamWriteByte               (H handle,B beo,B val);
+ B aaFileStreamWriteWord               (H handle,B beo,W val);
+ B aaFileStreamWriteDword              (H handle,B beo,H val);
+ B aaFileStreamWriteQuad               (H handle,B beo,Q val);
+ B aaFileStreamWriteFloat              (H handle,B beo,F val);
+ B aaFileStreamWriteDouble             (H handle,B beo,D val);
+ B aaFileStreamReadByte                (H handle,B beo,BP val);
+ B aaFileStreamReadWord                (H handle,B beo,WP val);
+ B aaFileStreamReadDword               (H handle,B beo,HP val);
+ B aaFileStreamReadQuad                (H handle,B beo,QP val);
+ B aaFileStreamReadFloat               (H handle,B beo,FP val);
+ B aaFileStreamReadDouble              (H handle,B beo,DP val);
+ B aaFileStreamPeekByte                (H handle,B beo,BP val);
+ B aaFileStreamPeekWord                (H handle,B beo,WP val);
+ B aaFileStreamPeekDword               (H handle,B beo,HP val);
+ B aaFileStreamPeekQuad                (H handle,B beo,QP val);
+ B aaFileStreamPeekFloat               (H handle,B beo,FP val);
+ B aaFileStreamPeekDouble              (H handle,B beo,DP val);
+ B aaFileStreamOffsetSet               (H handle,Q offset);
+ B aaFileStreamOffsetAdjust            (H handle,G offsetamount);
+ B aaFileStreamOffsetPush              (H handle);
+ B aaFileStreamOffsetPop               (H handle);
+ B aaFileStreamSizeSet                 (H handle,Q bytes);
+ B aaFileStreamSizeAdjust              (H handle,G bytes);
+ B aaFileStreamFlush                   (H handle);
+ B aaFileStreamStringLen               (H handle,HP chars,BP stringmode);
+ B aaFileStreamStringRead              (H handle,HP chars,BP stringmode,H maxchars,VP buf);
+ B aaFileStreamStringLook              (H handle,H fromoff,H index,HP count,HP offset,HP chars,BP stringmode,H maxchars,VP buf);
+ B aaFileStreamWriteEof                (H handle);
+ B aaFileStreamSearch                  (H handle,H entrybytes,QP offset,VP data);
+ B aaFileStreamSearchf                 (H handle,H entrybytes,QP offset,VP fmt,...);
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaTextReaderNew                     (_textreader*textreader,H bytes,VP mem);
+ B aaTextReaderOpen                    (_textreader*textreader,VP filename,H startline,H maxlines);
+ B aaTextReaderDelete                  (_textreader*textreader);
+ B aaTextReaderLineGet                 (_textreader*textreader,H line,VP txt);
+
+
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaTextLoaderNew                     (_textloader*textloader,Q offset,VP file,B(*proc)(_textloader*,Q,H,VP));
+ B aaTextLoaderDelete                  (_textloader*textloader);
+ B aaTextLoaderYield                   (_textloader*textloader,H ita);
+ B aaTextLoaderProc                    (_textloader*textloader,Q linenum,H chars,VP txt);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaSysRgbaGet                        (_sysrgba*sysrgba);
+ B aaSysMetricsGet                     (_sysmetrics*sysmetrics);
+ B aaSysPathGet                        (_syspath*syspath);
+ B aaSysPathToString                   (_syspath*syspath,VP str);
+ B aaSysVarsGet                        (_sysvars*sysvars);
+ B aaSysVarsSet                        (VP name,VP fmt,...);
+ B aaSysvarsExplode                    (_sysvars*sysvars,H index,_stringexplode*stringexplode);
+ B aaSysVarsToString                   (_sysvars*sysvars,VP str);
+ B aaSysInfoGet                        (_sysinfo*sysinfo);
+ B aaSysInfoToString                   (_sysinfo*sysinfo,VP str);
+ B aaSysPowerGet                       (_syspower*syspower);
+ B aaSysBenchmark                      (B testnum,DP time);
+ B aaSysRemoteSessionGet               (BP type);
+ B aaSysTrayGet                        (HWND*wnd,_rect*rect);
+ B aaSysFileIconGet                    (VP filename);
+ B aaSysRestartOnCrashSet              (B state,H msrunreq);
+ B aaSysCpuLoadRefresh                 (V);
+ B aaSysShortCutCreate                 (VP filename,VP shortcutname,VP workingpath,VP iconfile,H iconindex);
+ B aaSysUnInstallSet                   (CP applicationname,CP displayname,CP uninstallexepath);
+ B aaSysUnInstallRemove                (CP applicationname);
+ B aaSysStartupAppSet                  (VP applicationname,VP applicationexepath);
+ B aaSysStartupAppGet                  (VP applicationname,VP applicationexepath);
+ B aaSysStartupAppRemove               (VP applicationname);
+ B aaSysFileAssociationSet             (CP extension,CP mimetype,CP appcmdline,CP deficon,CP description);
+ B aaSysFileAssociationRemove          (CP extension);
+ B aaSysContextMenuSet                 (CP extension,CP menuname,VP deficon,CP appcmdline);
+ B aaSysContextMenuRemove              (CP extension,CP menuname);
+ B aaSysSchemeHandlerSet               (VP scheme,VP deficon,VP appcmdline);
+ B aaSysTweak                          (V);
+
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaResourceInfoGet                   (H num,HP bytes);
+ B aaResourceToMemory                  (H num,HP bytes,PP mem);
+ B aaResourceToFile                    (H num,HP bytes,VP filename);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaDigestCreate                      (HP handle,B type);
+ B aaDigestDestroy                     (H handle);
+ B aaDigestStatus                      (H handle,_digeststatus*digeststatus);
+ B aaDigestWrite                       (H handle,H bytes,VP data,B finish,VP rdig,VP rdigstr);
+ B aaDigestReset                       (H handle);
+ B aaDigestToString                    (H handle,VP string);
+ B aaDigestMac                         (H handle,H keylen,VP key,H bytes,VP data,VP rdig,VP rdigstr);
+
+ B aaDigestQuick                       (B type,VP digstr,H bytes,VP data);
+ B aaDigestQuickf                      (B type,VP digstr,VP fmt,...);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaCryptoCreate                      (HP handle,B type,B keylen,VP key);
+ B aaCryptoDestroy                     (H handle);
+ B aaCryptoTranscode                   (H handle,H bytes,VP data,B dir);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaJsonCreate                        (HP handle,B encflag);
+ B aaJsonDestroy                       (H handle);
+ B aaJsonStatus                        (H handle,_jsonstatus*jsonstatus);
+ B aaJsonReset                         (H handle,B encflag);
+ B aaJsonAppendf                       (H handle,VP fmt,...);
+ B aaJsonAppendBytes                   (H handle,H bytes,VP data);
+ B aaJsonDecode                        (H handle);
+ B aaJsonEncodeObjectOpen              (H handle);
+ B aaJsonEncodeObjectClose             (H handle);
+ B aaJsonEncodeArrayOpen               (H handle);
+ B aaJsonEncodeArrayClose              (H handle);
+ B aaJsonEncodeKey                     (H handle,VP fmt,...);
+ B aaJsonEncodeString                  (H handle,VP fmt,...);
+ B aaJsonEncodeFloat                   (H handle,D val);
+ B aaJsonEncodeInt                     (H handle,G val);
+ B aaJsonEncodeBool                    (H handle,B val);
+ B aaJsonEncodeNull                    (H handle);
+ B aaJsonEncodeKeyString               (H handle,VP key,VP fmt,...);
+ B aaJsonEncodeKeyFloat                (H handle,VP key,D val);
+ B aaJsonEncodeKeyInt                  (H handle,VP key,G val);
+ B aaJsonEncodeKeyBool                 (H handle,VP key,B val);
+ B aaJsonEncodeKeyNull                 (H handle,VP key);
+ B aaJsonParserLineGet                 (H handle,H line,_jsonline*jsonline,VP str);
+ B aaJsonParserKeyFind                 (H handle,HP line,H from,Z depth,VP val,VP fmt,...);
+ B aaJsonDumpLineGet                   (H handle,HP line,H maxchars,VP str);
+
+
+
+
+/*-----------------------------------------------------------------------*/
+
+ B aaClassEmptyIdGet                   (BP id);
+ B aaClassCreate                       (B id,H limit,H bytes,H initial,B(*Destructor)(H));
+ B aaClassDestroy                      (B id);
+ B aaClassStatus                       (B id,_classstatus*classstatus);
+ B aaClassNew                          (B id,HP handle,PP mem);
+ B aaClassDelete                       (B id,H handle);
+ B aaClassCheck                        (B id,H handle,PP mem,BP isprotected);
+ B aaClassIndexGet                     (B id,H handle,HP index);
+ B aaClassProtect                      (B id,H handle,B state);
+ B aaClassNext                         (B id,HP handle,PP mem);
+ B aaClassGet                          (B id,H instanceindex,HP handle,PP mem);
+ B aaClassIdGet                        (BP id,H handle);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaTaskNew                           (_task*task,H id,B(*proc)(_task*));
+ B aaTaskDelete                        (_task*task);
+ B aaTaskStageSet                      (_task*task,H stage);
+ B aaTaskExit                          (_task*task);
+ B aaTaskYield                         (_task*task);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaTaskGroupNew                      (_taskgroup*taskgroup,H idbase);
+ B aaTaskGroupDelete                   (_taskgroup*taskgroup);
+ B aaTaskGroupAdd                      (_taskgroup*taskgroup,HP id,H boost,B(*proc)(_task*));
+ B aaTaskGroupYield                    (_taskgroup*taskgroup);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaSettingsCreate                    (VP category);
+ B aaSettingsDestroy                   (VP category);
+ B aaSettingsRead                      (VP category,VP name,HP bytes,H maxbytes,VP data);
+ B aaSettingsWrite                     (VP category,VP name,H bytes,VP data,B allowoverwrite);
+ B aaSettingsDelete                    (VP category,VP name);
+ B aaSettingsLengthGet                 (VP category,VP name,HP bytes);
+
+ B aaSettingsEnumStart                 (VP category);
+ B aaSettingsEnumStep                  (H index,VP name,HP bytes,VP data);
+ B aaSettingsEnumStop                  (V);
+
+ B aaSettingsDrop                      (VP name);
+ B aaSettingsSave                      (VP name,H bytes,VP data);
+ B aaSettingsLoad                      (VP name,HP bytes,H maxbytes,VP data);
+
+/*-----------------------------------------------------------------------*/
+
+ B aaClipBoardTextWritef               (B global,VP fmt,...);
+ B aaClipBoardTextWrite                (B global,H chars,VP text);
+ B aaClipBoardTextRead                 (B global,HP chars,H maxchars,VP text);
+ B aaClipBoardDiscard                  (B global);
+ B aaClipBoardTextPaste                (B global,VP fmt,...);
+ B aaClipBoardFileSet                  (B global,VP filename);
+ B aaClipBoardFileRead                 (B global,HP chars,H maxchars,VP text);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaIpcCreate                         (HP handle,B incoming,H bytes,VP name);
+ B aaIpcDestroy                        (H handle);
+ B aaIpcStatus                         (H handle,_ipcstatus*ipcstatus,B logicstate);
+
+/*-----------------------------------------------------------------------*/
+
+
+ B aaDesktopCreate                     (HP handle,VP fmt,...);
+ B aaDesktopDestroy                    (H handle);
+ B aaDesktopStatus                     (H handle,_desktopstatus*desktopstatus);
+ B aaDesktopSwitch                     (H handle,B state);
+
+
+/*-----------------------------------------------------------------------*/
+
+
+
+ B aaVmNew                             (_vm*vm);
+ B aaVmDelete                          (_vm*vm);
+ B aaVmRamSwap                         (_vm*vm,BP parmram,BP userram);
+ B aaVmProcGet                         (_vm*vm,H index,VP name,PP proc,HP proclen);
+ B aaVmProcFind                        (_vm*vm,VP name,HP index,PP proc,HP proclen,B addifok);
+ B aaVmProcAdd                         (_vm*vm,HP index,VP name,VP proc);
+ B aaVmProcLoad                        (_vm*vm,H index);
+ B aaVmParmPush                        (_vm*vm,H psize,VP parm);
+ B aaVmParmPtr                         (_vm*vm,VP ptr);
+ B aaVmParmPtrPtr                      (_vm*vm,PP ptr);
+ B aaVmParmByte                        (_vm*vm,B parm);
+ B aaVmParmWord                        (_vm*vm,W parm);
+ B aaVmParmDword                       (_vm*vm,H parm);
+ B aaVmParmQuad                        (_vm*vm,Q parm);
+ B aaVmParmDouble                      (_vm*vm,D parm);
+ B aaVmParmMulti                       (_vm*vm,VP fmt,...);
+ B aaVmCall                            (_vm*vm);
+ B aaVmCallEx                          (_vm*vm,VP name,VP fmt,...);
+ B aaVmAaHeaderFunctions               (V);
+
